@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Utilities for TypeScript projects",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alvamind/alvamind-tools.git"
+  },
   "bin": {
     "generate-source": "./dist/generate-source.js",
     "commit": "./dist/commit.js"
@@ -12,12 +17,14 @@
     "prepare": "npm run build"
   },
   "files": [
-    "dist"
+    "dist",
+    "src",
+    "README.md"
   ],
   "keywords": [
     "typescript",
     "utilities"
   ],
-  "author": "Your Name",
+  "author": "Alvamind",
   "license": "MIT"
 }
