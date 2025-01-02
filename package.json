@@ -1,0 +1,23 @@
+{
+  "name": "alvamind-tools",
+  "version": "1.0.0",
+  "description": "Utilities for TypeScript projects",
+  "main": "dist/index.js",
+  "bin": {
+    "generate-source": "./dist/generate-source.js",
+    "commit": "./dist/commit.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "typescript",
+    "utilities"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
