@@ -29,14 +29,15 @@ async function cleanProject() {
     '.DS_Store',
   ];
 
+  let deletedCount = 0;
+
   try {
     for (const folder of foldersToDelete) {
       const fullPath = path.join(projectDir, folder);
       if (fs.existsSync(fullPath)) {
         fs.rmSync(fullPath, { recursive: true, force: true });
-        console.log(`${chalk.green('✓')} Deleted: ${chalk.cyan(folder)}`);
-      } else {
-        console.log(`${chalk.yellow('!')} Not found: ${chalk.gray(folder)}`);
+        console.log(`${chalk.green('✓')} Deleted folder: ${chalk.cyan(folder)}`);
+        deletedCount++;
       }
     }
 
@@ -44,9 +45,8 @@ async function cleanProject() {
       const fullPath = path.join(projectDir, file);
       if (fs.existsSync(fullPath)) {
         fs.rmSync(fullPath, { force: true });
-        console.log(`${chalk.green('✓')} Deleted: ${chalk.cyan(file)}`);
-      } else {
-        console.log(`${chalk.yellow('!')} Not found: ${chalk.gray(file)}`);
+        console.log(`${chalk.green('✓')} Deleted file: ${chalk.cyan(file)}`);
+        deletedCount++;
       }
     }
 
@@ -56,10 +56,11 @@ async function cleanProject() {
       if (fs.existsSync(fullPath)) {
         fs.rmSync(fullPath, { recursive: true, force: true });
         console.log(`${chalk.green('✓')} Deleted generated dir: ${chalk.cyan(dir)}`);
+        deletedCount++;
       }
     }
 
-    console.log(chalk.green('\n✨ Cleaning completed successfully!'));
+    console.log(chalk.green(`\n✨ Cleaning completed! ${deletedCount} items deleted`));
   } catch (error) {
     console.error(chalk.red('Error during cleaning:'), error);
     process.exit(1);

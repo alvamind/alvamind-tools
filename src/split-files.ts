@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // split-files.ts
 import * as fs from 'fs';
 import * as path from 'path';
@@ -36,7 +38,9 @@ function splitFile(singleFilePath: string, markers: string[], outputDirPath?: st
 
   for (let i = 0; i < fileSections.length; i++) {
     const { filePath, start, end, created } = fileSections[i];
-    const fileDir = outputDirPath ? path.resolve(outputDirPath, path.dirname(filePath)) : path.resolve(path.dirname(filePath));
+    const fileDir = outputDirPath
+      ? path.resolve(outputDirPath, path.dirname(filePath))
+      : path.resolve(path.dirname(filePath));
     const fileName = path.basename(filePath);
     const fullFilePath = path.join(fileDir, fileName);
 
@@ -44,7 +48,8 @@ function splitFile(singleFilePath: string, markers: string[], outputDirPath?: st
       fs.mkdirSync(fileDir, { recursive: true });
     }
 
-    const content = i === 0 ? fileContent.substring(lastIndex, start) : fileContent.substring(lastIndex, start);
+    const content =
+      i === 0 ? fileContent.substring(lastIndex, start) : fileContent.substring(lastIndex, start);
 
     if (i !== 0) {
       const previousFile = fileSections[i - 1];
@@ -70,22 +75,43 @@ function splitFile(singleFilePath: string, markers: string[], outputDirPath?: st
 
   if (fileSections.length > 0) {
     console.log(chalk.cyan('\nFiles splitted successfully! ✨\n'));
-    const openCommand = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+    const openCommand =
+      process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
     console.log(chalk.blue(`You can open the files with ${chalk.bold('CTRL+Click')}`));
   }
 }
 
 const args = process.argv.slice(2);
 
-if (args.length < 2) {
-  console.error(chalk.red('Usage: split [singleFilePath] [marker1,marker2,...] [outputDirPath]'));
-  console.error(chalk.yellow('Example: split all-in-one.ts "src/,custom/" ./output'));
+if (args.length === 0) {
+  console.error(
+    chalk.red('Usage: split source=<filePath> markers=<marker1,marker2,...> [outputDir=<path>]')
+  );
+  console.error(
+    chalk.yellow('Example: split source=all-in-one.ts markers=src/,custom/ outputDir=./output')
+  );
   process.exit(1);
 }
 
-const singleFilePath = args[0];
-const markersString = args[1];
-const markers = markersString.split(',');
-const outputDirPath = args[2];
+// Parse named arguments
+const parsedArgs: { [key: string]: string } = {};
+args.forEach((arg) => {
+  const [key, value] = arg.split('=');
+  if (key && value) {
+    parsedArgs[key] = value;
+  }
+});
+
+if (!parsedArgs.source || !parsedArgs.markers) {
+  console.error(chalk.red('Error: source and markers parameters are required'));
+  console.error(
+    chalk.yellow('Example: split source=all-in-one.ts markers=src/,custom/ outputDir=./output')
+  );
+  process.exit(1);
+}
+
+const singleFilePath = parsedArgs.source;
+const markers = parsedArgs.markers.split(',');
+const outputDirPath = parsedArgs.outputDir;
 
 splitFile(singleFilePath, markers, outputDirPath);

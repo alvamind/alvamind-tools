@@ -12,14 +12,14 @@
     "generate-source": "./dist/generate-source.js",
     "commit": "./dist/commit.js",
     "clean": "./dist/clean.js",
-    "split": "./dist/split-files.js"
+    "split-code": "./dist/split-files.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",
     "source": "bun src/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
+    "split-code": "bun src/split-files.ts source=all-in-one.ts markers=src/,custom/ outputDir=./output",
     "build": "tsc && tsc -p tsconfig.build.json",
     "clean": "bun src/clean.ts",
-    "prepare": "npm run build",
     "test": "jest",
     "lint": "eslint src*.ts",
     "format": "prettier --write \"src*.ts\""

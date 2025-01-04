@@ -27,22 +27,22 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
 *   **User-Friendly Prompts:** Error if commit message is missing. Ain't no sneaky commits going on here! 🚫
 *   **Why This is Lit:** It's like having your own personal git butler. Makes the entire commit process seamless.
 
-   ```bash
-Starting commit process...
-Changed directory to: /path/to/your/project
-No git repository found. Initializing...
-Git repository initialized.
-Checking for remote repository...
-No remote repository found. Creating...
-Create a public or private repository? (public/private): private
-Created private repository: your-project-name on github.
-No changes to commit.
-Existing commits pushed successfully.
-Do you want to set the upstream? (yes/no): yes
-Setting upstream...
-Upstream set successfully.
-Changes committed and pushed successfully.
-    ```
+        ```bash
+      Starting commit process...
+      Changed directory to: /path/to/your/project
+      No git repository found. Initializing...
+      Git repository initialized.
+      Checking for remote repository...
+      No remote repository found. Creating...
+      Create a public or private repository? (public/private): private
+      Created private repository: your-project-name on github.
+      No changes to commit.
+      Existing commits pushed successfully.
+      Do you want to set the upstream? (yes/no): yes
+      Setting upstream...
+      Upstream set successfully.
+      Changes committed and pushed successfully.
+          ```
 
 ### 3. 🧹  One-Click Project Cleaning with `clean`
 
@@ -58,23 +58,23 @@ Changes committed and pushed successfully.
 * **Multiple Markers Support:** Use different markers for different file types or directories. 🎯
 * **Why This is Lit:** Perfect for when you need to break down a large file into a proper project structure. No more manual copy-pasting!
 
-   ```bash
-   # Example file content:
-   // src/models/user.ts
-   export interface User {
-     id: string;
-     name: string;
-   }
+      ```bash
+      # Example file content:
+      // src/models/user.ts
+      export interface User {
+        id: string;
+        name: string;
+      }
 
-   // src/controllers/user.ts
-   import { User } from '../models/user';
-   export class UserController {
-     // ...
-   }
+      // src/controllers/user.ts
+      import { User } from '../models/user';
+      export class UserController {
+        // ...
+      }
 
-   # Command to split:
-   split all-in-one.ts "src/" ./output
-   ```
+      # Command to split:
+      split all-in-one.ts "src/" ./output
+      ```
 
 ## 🛠️ How to Use: Getting Started
 
@@ -112,7 +112,7 @@ Changes committed and pushed successfully.
 
 5. **Split Your Files:**
    ```bash
-   split your-file.ts "marker1,marker2" ./output-dir
+   split-code source=all-in-one.ts markers=src/,custom/ outputDir=./output
    # or with npm run
    npm run split your-file.ts "src/,custom/" ./output
    ```

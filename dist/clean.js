@@ -62,25 +62,22 @@ function cleanProject() {
             'pnpm-lock.yaml',
             '.DS_Store',
         ];
+        let deletedCount = 0;
         try {
             for (const folder of foldersToDelete) {
                 const fullPath = path.join(projectDir, folder);
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { recursive: true, force: true });
-                    console.log(`${chalk_1.default.green('✓')} Deleted: ${chalk_1.default.cyan(folder)}`);
-                }
-                else {
-                    console.log(`${chalk_1.default.yellow('!')} Not found: ${chalk_1.default.gray(folder)}`);
+                    console.log(`${chalk_1.default.green('✓')} Deleted folder: ${chalk_1.default.cyan(folder)}`);
+                    deletedCount++;
                 }
             }
             for (const file of filesToDelete) {
                 const fullPath = path.join(projectDir, file);
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { force: true });
-                    console.log(`${chalk_1.default.green('✓')} Deleted: ${chalk_1.default.cyan(file)}`);
-                }
-                else {
-                    console.log(`${chalk_1.default.yellow('!')} Not found: ${chalk_1.default.gray(file)}`);
+                    console.log(`${chalk_1.default.green('✓')} Deleted file: ${chalk_1.default.cyan(file)}`);
+                    deletedCount++;
                 }
             }
             const generatedDirs = yield findGeneratedDirs('.');
@@ -89,9 +86,10 @@ function cleanProject() {
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { recursive: true, force: true });
                     console.log(`${chalk_1.default.green('✓')} Deleted generated dir: ${chalk_1.default.cyan(dir)}`);
+                    deletedCount++;
                 }
             }
-            console.log(chalk_1.default.green('\n✨ Cleaning completed successfully!'));
+            console.log(chalk_1.default.green(`\n✨ Cleaning completed! ${deletedCount} items deleted`));
         }
         catch (error) {
             console.error(chalk_1.default.red('Error during cleaning:'), error);
