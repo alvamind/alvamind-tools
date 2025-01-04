@@ -21,7 +21,7 @@ async function cleanProject() {
     '.vite',
   ];
   const filesToDelete = [
-    '.bun.lockb',
+    'bun.lockb',
     'yarn.lock',
     'package-lock.json',
     'pnpm-lock.yaml',

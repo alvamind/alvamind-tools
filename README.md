@@ -27,6 +27,23 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
 *   **User-Friendly Prompts:** Error if commit message is missing. Ain't no sneaky commits going on here! 🚫
 *   **Why This is Lit:** It's like having your own personal git butler. Makes the entire commit process seamless.
 
+   ```bash
+Starting commit process...
+Changed directory to: /path/to/your/project
+No git repository found. Initializing...
+Git repository initialized.
+Checking for remote repository...
+No remote repository found. Creating...
+Create a public or private repository? (public/private): private
+Created private repository: your-project-name on github.
+No changes to commit.
+Existing commits pushed successfully.
+Do you want to set the upstream? (yes/no): yes
+Setting upstream...
+Upstream set successfully.
+Changes committed and pushed successfully.
+    ```
+
 ### 3. 🧹  One-Click Project Cleaning with `clean`
 
 *   **Deep Clean Mastery:**  Clears out all those pesky build directories, cache folders, lock files, and other junk you don't need. 🗑️

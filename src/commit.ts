@@ -37,12 +37,15 @@ async function commitAndPush() {
   }
 
   try {
+    console.log('Starting commit process...');
     process.chdir(projectDir);
+    console.log(`Changed directory to: ${projectDir}`);
 
     // Check if .git exists
     if (!fs.existsSync(path.join(projectDir, '.git'))) {
       console.log('No git repository found. Initializing...');
       execSync('git init', { stdio: 'inherit' });
+      console.log('Git repository initialized.');
     }
 
     // Check if gh is installed
@@ -50,8 +53,10 @@ async function commitAndPush() {
       console.log('GitHub CLI (gh) is not installed. Skipping remote repository creation.');
     } else {
       // Check if a remote repo exists on github
+      console.log('Checking for remote repository...');
       try {
         execSync('gh repo view', { stdio: 'ignore' });
+        console.log('Remote repository found.');
       } catch (error) {
         console.log('No remote repository found. Creating...');
         const repoType = await askQuestion(
@@ -60,6 +65,7 @@ async function commitAndPush() {
         execSync(`gh repo create ${projectName} --${repoType} --source=. --remote=upstream`, {
           stdio: 'inherit',
         });
+        console.log(`Created ${repoType} repository: ${projectName} on github.`);
       }
     }
 
@@ -75,12 +81,16 @@ async function commitAndPush() {
       }
       process.exit(0);
     }
+    console.log('Staging all changes...');
     execSync('git add .', { stdio: 'inherit' });
+    console.log('Committing changes...');
     execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
+    console.log('Pushing changes...');
     execSync('git push', { stdio: 'inherit' });
 
     const setUpstream = await askQuestion('Do you want to set the upstream? (yes/no): ');
     if (setUpstream.toLowerCase() === 'yes') {
+      console.log('Setting upstream...');
       execSync('git push --set-upstream upstream master', { stdio: 'inherit' });
       console.log('Upstream set successfully.');
     }
