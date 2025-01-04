@@ -1,6 +1,6 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,17 +9,17 @@
     "url": "git+https://github.com/alvamind/alvamind-tools.git"
   },
   "bin": {
-    "generate-source": "/dist/generate-source.js",
-    "commit": "/dist/commit.js",
-    "clean": "/dist/clean.js",
-    "split-code": "/dist/split-files.js",
-    "publish-npm": "/dist/npm-publish.js"
+    "generate-source": "./dist/generate-source.js",
+    "commit": "./dist/commit.js",
+    "clean": "./dist/clean.js",
+    "split-code": "./dist/split-files.js",
+    "publish-npm": "./dist/npm-publish.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",
     "source": "bun src/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
     "split-code": "bun src/split-files.ts source=all-in-one.ts markers=src/,custom/ outputDir=./output",
-    "build": "tsc && tsc -p tsconfig.build.json && chmod +x dist/*.js",
+    "build": "bunx tsc && bunx tsc -p tsconfig.build.json && chmod +x dist/*.js",
     "clean": "bun src/clean.ts",
     "publish-npm": "bun src/npm-publish.ts",
     "test": "jest",

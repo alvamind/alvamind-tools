@@ -1,6 +1,7 @@
 # Project: alvamind-tools
 
 src
+dist
 ====================
 // changelog.md
 # Changelog
@@ -167,6 +168,7 @@ import { execSync } from 'child_process';
 import chalk from 'chalk';
 const projectDir = process.cwd();
 async function cleanProject() {
+  const chalk = (await import('chalk')).default;
   const foldersToDelete = [
     '.bun',
     '.turbo',
@@ -457,6 +459,106 @@ args.forEach((arg) => {
 });
 generateSourceCodeMarkdown(outputFilename, customInclude, customExclude).catch((err) => console.error('Error:', err));
 
+// src/npm-publish.ts
+#!/usr/bin/env node
+import { execSync } from 'child_process';
+import * as readline from 'readline';
+import chalk from 'chalk';
+import * as fs from 'fs';
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+async function askQuestion(query: string): Promise<string> {
+  return new Promise((resolve) => {
+    rl.question(query, resolve);
+  });
+}
+function checkGitStatus(): boolean {
+  try {
+    const status = execSync('git status --porcelain').toString();
+    return status.length === 0;
+  } catch (error) {
+    return false;
+  }
+}
+function getCurrentBranch(): string {
+  return execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+}
+function validatePackageJson(): void {
+  const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  const requiredFields = ['name', 'version', 'description', 'main', 'types'];
+  for (const field of requiredFields) {
+    if (!packageJson[field]) {
+      throw new Error(`Missing required field in package.json: ${field}`);
+    }
+  }
+}
+async function selectVersionType(): Promise<string> {
+  console.log(chalk.cyan('\nSelect version increment type:'));
+  console.log(chalk.gray('1. patch (1.0.0 -> 1.0.1)'));
+  console.log(chalk.gray('2. minor (1.0.0 -> 1.1.0)'));
+  console.log(chalk.gray('3. major (1.0.0 -> 2.0.0)'));
+  const answer = await askQuestion('Enter your choice (1-3): ');
+  const versionMap: { [key: string]: string } = {
+    '1': 'patch',
+    '2': 'minor',
+    '3': 'major',
+  };
+  return versionMap[answer] || 'patch';
+}
+async function publishPackage() {
+  try {
+    console.log(chalk.cyan('\n🔍 Running pre-publish checks...\n'));
+    console.log(chalk.cyan('📋 Validating package.json...'));
+    validatePackageJson();
+    console.log(chalk.green('✅ package.json is valid'));
+    const currentBranch = getCurrentBranch();
+    if (currentBranch !== 'main' && currentBranch !== 'master') {
+      console.log(chalk.yellow(`⚠️  You're on branch '${currentBranch}'.`));
+    }
+    if (!checkGitStatus()) {
+      console.log(chalk.yellow('⚠️  You have uncommitted changes'));
+      const commitMessage = await askQuestion(chalk.cyan('Enter commit message: '));
+      if (!commitMessage.trim()) {
+        throw new Error('Commit message is required');
+      }
+      execSync(`bun commit "${commitMessage}"`, { stdio: 'inherit' });
+    }
+    console.log(chalk.cyan('\n🧹 Cleaning project...'));
+    execSync('bun clean', { stdio: 'inherit' });
+    console.log(chalk.cyan('\n📦 Installing dependencies...'));
+    execSync('bun install', { stdio: 'inherit' });
+    console.log(chalk.cyan('\n🔨 Building project...'));
+    execSync('bun run build', { stdio: 'inherit' });
+    try {
+      console.log(chalk.cyan('\n🧪 Running tests...'));
+      execSync('bun test', { stdio: 'inherit' });
+      console.log(chalk.green('✅ Tests passed'));
+    } catch (error) {
+      console.log(chalk.yellow('⚠️  No tests found or tests failed'));
+    }
+    const versionType = await selectVersionType();
+    console.log(chalk.cyan(`\n📝 Incrementing ${versionType} version...`));
+    execSync(`npm version ${versionType} --no-git-tag-version`, { stdio: 'inherit' });
+    console.log(chalk.cyan('\n🚀 Publishing to npm...'));
+    execSync('npm publish', { stdio: 'inherit' });
+    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    const tagName = `v${packageJson.version}`;
+    execSync(`git tag ${tagName}`, { stdio: 'inherit' });
+    execSync('git push && git push --tags', { stdio: 'inherit' });
+    console.log(chalk.green('\n✨ Package successfully published to npm!'));
+    console.log(chalk.gray(`Version: ${packageJson.version}`));
+    console.log(chalk.gray(`Tag: ${tagName}`));
+  } catch (error) {
+    console.error(chalk.red('\n❌ Error during publish process:'), error);
+    process.exit(1);
+  } finally {
+    rl.close();
+  }
+}
+publishPackage();
+
 // .prettierrc
 {
   "semi": true,
@@ -640,7 +742,7 @@ __snapshots__/
 // package.json
 {
   "name": "alvamind-tools",
-  "version": "1.0.5",
+  "version": "1.0.9",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -649,16 +751,19 @@ __snapshots__/
     "url": "git+https://github.com/alvamind/alvamind-tools.git"
   },
   "bin": {
-    "generate-source": "./dist/generate-source.js",
-    "commit": "./dist/commit.js",
-    "clean": "./dist/clean.js",
-    "split-code": "./dist/split-files.js"
+    "generate-source": "/dist/generate-source.js",
+    "commit": "/dist/commit.js",
+    "clean": "/dist/clean.js",
+    "split-code": "/dist/split-files.js",
+    "publish-npm": "/dist/npm-publish.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",
     "source": "bun src/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
-    "build": "tsc && tsc -p tsconfig.build.json",
+    "split-code": "bun src/split-files.ts source=all-in-one.ts markers=src/,custom/ outputDir=./output",
+    "build": "tsc && tsc -p tsconfig.build.json && chmod +x dist/*.js",
     "clean": "bun src/clean.ts",
+    "publish-npm": "bun src/npm-publish.ts",
     "test": "jest",
     "lint": "eslint src*.ts",
     "format": "prettier --write \"src*.ts\""
@@ -686,23 +791,24 @@ __snapshots__/
   },
   "homepage": "https://github.com/alvamind/alvamind-tools#readme",
   "dependencies": {
-    "chalk": "^5.4.1",
+    "chalk": "^4.1.2",
     "glob": "^8.1.0"
   },
   "devDependencies": {
-    "@types/node": "^18.19.69",
+    "@types/node": "^22.10.5",
     "@types/jest": "^29.5.14",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "eslint": "^8.57.1",
+    "@typescript-eslint/eslint-plugin": "^8.19.0",
+    "@typescript-eslint/parser": "^8.19.0",
+    "eslint": "^9.17.0",
     "jest": "^29.7.0",
-    "prettier": "^2.8.8",
-    "rimraf": "^5.0.10",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
     "ts-jest": "^29.2.5",
-    "typescript": "^4.9.5"
+    "typescript": "^5.7.2"
   },
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "preferGlobal": true
 }
 
