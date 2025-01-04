@@ -21,53 +21,59 @@ function splitFile(singleFilePath: string, markers: string[], outputDirPath?: st
 
   const fileContent = fs.readFileSync(singleFilePath, 'utf-8');
   const fileSections: FileSection[] = [];
-  let lastIndex = 0;
 
+  // Find all file markers and their positions
   markers.forEach((marker) => {
     const fileRegex = new RegExp(`\\/\\/ ${marker}(.*?\\.ts)`, 'g');
     let match;
     while ((match = fileRegex.exec(fileContent)) !== null) {
-      const filePath = match[1];
+      const filePath = match[1].trim();
       const start = match.index;
-      const end = fileRegex.lastIndex;
-      fileSections.push({ filePath, start, end, content: '', created: false });
+      fileSections.push({
+        filePath,
+        start,
+        end: start, // Will be updated later
+        content: '',
+        created: false,
+      });
     }
   });
 
+  // Sort sections by their start position
   fileSections.sort((a, b) => a.start - b.start);
 
+  // Set the end position for each section
   for (let i = 0; i < fileSections.length; i++) {
-    const { filePath, start, end, created } = fileSections[i];
+    const currentSection = fileSections[i];
+    const nextSection = fileSections[i + 1];
+
+    // If there's a next section, set end to the start of next section
+    // Otherwise, set it to the end of file
+    currentSection.end = nextSection ? nextSection.start : fileContent.length;
+
+    // Extract content from after the marker line to the start of next section
+    const markerLineEnd = fileContent.indexOf('\n', currentSection.start) + 1;
+    currentSection.content = fileContent.substring(markerLineEnd, currentSection.end).trim();
+  }
+
+  // Create files for each section
+  fileSections.forEach((section) => {
+    const { filePath, content } = section;
     const fileDir = outputDirPath
       ? path.resolve(outputDirPath, path.dirname(filePath))
       : path.resolve(path.dirname(filePath));
     const fileName = path.basename(filePath);
     const fullFilePath = path.join(fileDir, fileName);
 
+    // Create directory if it doesn't exist
     if (!fs.existsSync(fileDir)) {
       fs.mkdirSync(fileDir, { recursive: true });
     }
 
-    const content =
-      i === 0 ? fileContent.substring(lastIndex, start) : fileContent.substring(lastIndex, start);
-
-    if (i !== 0) {
-      const previousFile = fileSections[i - 1];
-      if (previousFile && !previousFile.created) {
-        previousFile.content = fileContent.substring(previousFile.start, start);
-        fs.writeFileSync(fullFilePath, previousFile.content.trim());
-        console.log(chalk.green(`Created: ${chalk.bold(fullFilePath)}`));
-        previousFile.created = true;
-      }
-    }
-    lastIndex = end;
-
-    if (i === fileSections.length - 1) {
-      const content = fileContent.substring(start, fileContent.length);
-      fs.writeFileSync(fullFilePath, content.trim());
-      console.log(chalk.green(`Created: ${chalk.bold(fullFilePath)}`));
-    }
-  }
+    // Write file content
+    fs.writeFileSync(fullFilePath, content);
+    console.log(chalk.green(`Created: ${chalk.bold(fullFilePath)}`));
+  });
 
   if (fileSections.length === 0 && fileContent.length > 0) {
     console.log(chalk.yellow('No marker path found in the file.'));
