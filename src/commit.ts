@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
+import chalk from 'chalk';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -32,72 +33,72 @@ async function isGhInstalled(): Promise<boolean> {
 
 async function commitAndPush() {
   if (!commitMessage) {
-    console.error('Commit message is required.');
+    console.error(chalk.red('❌ Commit message is required.'));
     process.exit(1);
   }
 
   try {
-    console.log('Starting commit process...');
+    console.log(chalk.cyan('🚀 Starting commit process...'));
     process.chdir(projectDir);
-    console.log(`Changed directory to: ${projectDir}`);
+    console.log(chalk.gray(`📂 Working in: ${projectDir}`));
 
     // Check if .git exists
-    if (!fs.existsSync(path.join(projectDir, '.git'))) {
-      console.log('No git repository found. Initializing...');
+    const isNewRepo = !fs.existsSync(path.join(projectDir, '.git'));
+    if (isNewRepo) {
+      console.log(chalk.yellow('⚠️  No git repository found. Initializing...'));
       execSync('git init', { stdio: 'inherit' });
-      console.log('Git repository initialized.');
+      console.log(chalk.green('✅ Git repository initialized.'));
     }
 
     // Check if gh is installed
     if (await !isGhInstalled()) {
-      console.log('GitHub CLI (gh) is not installed. Skipping remote repository creation.');
+      console.log(
+        chalk.yellow('⚠️  GitHub CLI (gh) is not installed. Skipping remote repository creation.')
+      );
     } else {
       // Check if a remote repo exists on github
-      console.log('Checking for remote repository...');
+      console.log(chalk.cyan('🔍 Checking for remote repository...'));
       try {
         execSync('gh repo view', { stdio: 'ignore' });
-        console.log('Remote repository found.');
+        console.log(chalk.green('✅ Remote repository found.'));
       } catch (error) {
-        console.log('No remote repository found. Creating...');
-        const repoType = await askQuestion(
-          'Create a public or private repository? (public/private): '
-        );
-        execSync(`gh repo create ${projectName} --${repoType} --source=. --remote=upstream`, {
+        console.log(chalk.yellow('⚠️  No remote repository found. Creating...'));
+        const makePrivate = await askQuestion(chalk.cyan('Make repository private? (y/n): '));
+        const repoType = makePrivate.toLowerCase() === 'y' ? 'private' : 'public';
+        execSync(`gh repo create ${projectName} --${repoType} --source=. --push`, {
           stdio: 'inherit',
         });
-        console.log(`Created ${repoType} repository: ${projectName} on github.`);
+        console.log(chalk.green(`✅ Created ${repoType} repository: ${projectName} on GitHub`));
       }
     }
 
     const status = execSync('git status --porcelain').toString();
     if (!status) {
-      console.log('No changes to commit.');
-      try {
-        execSync('git push', { stdio: 'inherit' });
-        console.log('Existing commits pushed successfully.');
-      } catch (pushError) {
-        console.error('Error pushing commits:', pushError);
-        process.exit(1);
-      }
+      console.log(chalk.yellow('ℹ️  No changes to commit.'));
       process.exit(0);
     }
-    console.log('Staging all changes...');
-    execSync('git add .', { stdio: 'inherit' });
-    console.log('Committing changes...');
-    execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
-    console.log('Pushing changes...');
-    execSync('git push', { stdio: 'inherit' });
 
-    const setUpstream = await askQuestion('Do you want to set the upstream? (yes/no): ');
-    if (setUpstream.toLowerCase() === 'yes') {
-      console.log('Setting upstream...');
-      execSync('git push --set-upstream upstream master', { stdio: 'inherit' });
-      console.log('Upstream set successfully.');
+    console.log(chalk.cyan('📝 Staging all changes...'));
+    execSync('git add .', { stdio: 'inherit' });
+    console.log(chalk.cyan('💾 Committing changes...'));
+    execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
+
+    // Check if the branch has an upstream
+    try {
+      execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { stdio: 'ignore' });
+      console.log(chalk.cyan('⬆️  Pushing changes...'));
+      execSync('git push', { stdio: 'inherit' });
+    } catch (error) {
+      // No upstream set
+      const remoteName = 'origin';
+      const branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+      console.log(chalk.cyan(`⬆️  Setting upstream and pushing to ${remoteName}/${branchName}...`));
+      execSync(`git push --set-upstream ${remoteName} ${branchName}`, { stdio: 'inherit' });
     }
 
-    console.log('Changes committed and pushed successfully.');
+    console.log(chalk.green('✅ Changes committed and pushed successfully!'));
   } catch (error) {
-    console.error('Error during commit and push:', error);
+    console.error(chalk.red('❌ Error during commit and push:'), error);
     process.exit(1);
   } finally {
     rl.close();

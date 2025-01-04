@@ -11,7 +11,8 @@
   "bin": {
     "generate-source": "./dist/generate-source.js",
     "commit": "./dist/commit.js",
-    "clean": "./dist/clean.js"
+    "clean": "./dist/clean.js",
+    "split-files": "./dist/split-files.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",
@@ -46,6 +47,7 @@
   },
   "homepage": "https://github.com/alvamind/alvamind-tools#readme",
   "dependencies": {
+    "chalk": "^5.4.1",
     "glob": "^8.1.0"
   },
   "devDependencies": {

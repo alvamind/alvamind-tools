@@ -17,3 +17,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./generate-source"), exports);
 __exportStar(require("./commit"), exports);
 __exportStar(require("./clean"), exports);
+__exportStar(require("./split-files"), exports);
