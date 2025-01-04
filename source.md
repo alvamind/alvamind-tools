@@ -3,6 +3,35 @@
 src
 dist
 ====================
+// changelog.md
+# Changelog
+All notable changes to this project will be documented in this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [1.0.2] - 2025-01-04
+### Added
+-   **`clean` CLI Tool:**
+    -   Introduced a new CLI tool, `clean`, which removes common build artifacts, lockfiles, and cache directories.
+    -   Deletes the following directories: `.bun`, `.turbo`, `.eslintcache`, `.parcel-cache`, `node_modules`, `.next`, `.cache`, `dist`, `build`, `coverage`, and `.vite`.
+    -   Deletes the following files: `.bun.lockb`, `yarn.lock`, `package-lock.json`, `pnpm-lock.yaml` and `.DS_Store`.
+    -   Recursively removes all directories named `generated` throughout the project.
+    -   Includes basic error handling with console logs for missing directories and files.
+-  **Exported `clean` on `index.ts`**
+### Changed
+-   **`generate-source` CLI Tool:**
+    -   Now includes the project name at the top of the generated Markdown file, enhancing its readability.
+    -   Improved include/exclude functionality with regex support for more flexible filtering.
+    -   Add try catch error for exclude parsing.
+-   **`commit` CLI Tool:**
+    -   Now checks for existing changes before attempting to commit and push.
+### Fixed
+    -   Fix: prevent error when deleting a file or folder not existing.
+## [1.0.1] - 2025-01-02
+### Added
+-   **Initial Release:**
+    -   `generate-source` CLI tool: Generates a Markdown file containing the project's source code, excluding specified files and directories.
+    -   `commit` CLI tool: Automates the `git add .`, `git commit -m "message"`, and `git push` workflow.
+
 // tsconfig.json
 {
   "compilerOptions": {
@@ -21,6 +50,7 @@ dist
 // src/index.ts
 export * from './generate-source';
 export * from './commit';
+export * from './clean';
 
 // src/commit.ts
 #!/usr/bin/env node
@@ -54,6 +84,82 @@ try {
   console.error('Error during commit and push:', error);
   process.exit(1);
 }
+
+// src/clean.ts
+#!/usr/bin/env node
+import * as fs from 'fs';
+import * as path from 'path';
+import { execSync } from 'child_process';
+const projectDir = process.cwd();
+async function cleanProject() {
+  const foldersToDelete = [
+    '.bun',
+    '.turbo',
+    '.eslintcache',
+    '.parcel-cache',
+    'node_modules',
+    '.next',
+    '.cache',
+    'dist',
+    'build',
+    'coverage',
+    '.vite',
+  ];
+  const filesToDelete = [
+    '.bun.lockb',
+    'yarn.lock',
+    'package-lock.json',
+    'pnpm-lock.yaml',
+    '.DS_Store'
+  ]
+  try {
+    for (const folder of foldersToDelete) {
+      const fullPath = path.join(projectDir, folder);
+      if (fs.existsSync(fullPath)) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+        console.log(`Deleted: ${folder}`);
+      } else {
+        console.log(`Not found : ${folder}`)
+      }
+    }
+    for (const file of filesToDelete) {
+      const fullPath = path.join(projectDir, file)
+      if (fs.existsSync(fullPath)) {
+        fs.rmSync(fullPath, { force: true });
+        console.log(`Deleted : ${file}`)
+      } else {
+        console.log(`Not found: ${file}`)
+      }
+    }
+    const generatedDirs = await findGeneratedDirs('.');
+    for (const dir of generatedDirs) {
+      const fullPath = path.join(projectDir, dir)
+      if (fs.existsSync(fullPath)) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+        console.log(`Deleted generated dir: ${dir}`);
+      }
+    }
+    console.log('Done.');
+  } catch (error) {
+    console.error('Error during cleaning:', error);
+    process.exit(1);
+  }
+}
+async function findGeneratedDirs(dir: string): Promise<string[]> {
+  const entries = fs.readdirSync(path.join(projectDir, dir), { withFileTypes: true });
+  let generatedDirs: string[] = []
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === 'generated') {
+        generatedDirs.push(fullPath);
+      }
+      generatedDirs = [...generatedDirs, ...(await findGeneratedDirs(fullPath))];
+    }
+  }
+  return generatedDirs;
+}
+cleanProject().catch((err) => console.error('Error:', err));
 
 // src/generate-source.js
 #!/usr/bin/env node
@@ -522,10 +628,20 @@ __snapshots__/
 # Yarn Integrity file
 .yarn-integrity
 
+// tsconfig.build.json
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["test", "dist", "scripts"],
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "./dist"
+  }
+}
+
 // package.json
 {
   "name": "alvamind-tools",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -535,14 +651,14 @@ __snapshots__/
   },
   "bin": {
     "generate-source": "./dist/generate-source.js",
-    "commit": "./dist/commit.js"
+    "commit": "./dist/commit.js",
+    "clean": "./dist/clean.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",
     "source": "bun src/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
-    "build": "tsc",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean",
+    "build": "tsc && tsc -p tsconfig.build.json",
+    "clean": "bun src/clean.ts",
     "prepare": "npm run build",
     "test": "jest",
     "lint": "eslint src*.ts",

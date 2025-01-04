@@ -19,8 +19,11 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
 
 ### 2. 🚀 Git Automation with `commit`
 
+*   **Git Init Power:** Initializes a git repository if none exists. 🎛️
+*   **GitHub Repo Creation:** If `gh` is installed, creates a GitHub repository for you if none exists, asks for public or private. ➕
 *   **Commit & Push in One Go:**  A single command to add all changes, commit with a message, and push to your remote. No more remembering git commands! 💨
 *   **Safety First:** Checks for changes before committing. If no changes, it'll push existing commits. 🛡️
+*  **Set Upstream:** Asks if you want to set the upstream branch. ⬆️
 *   **User-Friendly Prompts:** Error if commit message is missing. Ain't no sneaky commits going on here! 🚫
 *   **Why This is Lit:** It's like having your own personal git butler. Makes the entire commit process seamless.
 
@@ -55,7 +58,7 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
     npm run commit "Your commit message here"
     ```
 
-    This will stage all changes, commit with the message, and push to remote.
+    This will stage all changes, commit with the message, and push to remote. It also checks if you have `gh` installed to create a new repo.
 4.  **Clean Your Project:**
     ```bash
     clean
@@ -113,6 +116,7 @@ We're not stopping here! We're constantly thinking about how AI can make our too
 *   **[✅] v1.0.0:** Initial release with `generate-source` and `commit` tools
 *   **[✅] v1.0.1:** Added include and exclude arguments.
 *   **[✅] v1.0.2:** Added clean functionality
+*   **[✅] v1.0.3:** Added git init and github repo creation on commit command.
 *   **[ ] v1.1.0:**  Automated commit message generation using AI.
 *   **[ ] v1.2.0:**  Enhanced documentation with AI-powered code summarization.
 *   **[ ] v1.3.0:**  Integration with common CI/CD pipelines.
