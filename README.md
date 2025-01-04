@@ -50,6 +50,32 @@ Changes committed and pushed successfully.
 *   **Generated Dir Destroyer:** Automatically finds and deletes all directories named "generated" from the entire project. 💪
 *   **Why This is Lit:** Imagine starting fresh with a clean slate. Perfect for when you just need to nuke everything and start fresh.
 
+### 4. 📂 Smart File Splitting with `split`
+
+* **Marker-Based Splitting:** Splits a single file into multiple files based on marker comments. 🔄
+* **Path Preservation:** Maintains the original file structure as specified in the markers. 📁
+* **Custom Output Directory:** Optionally specify where the split files should go. 📍
+* **Multiple Markers Support:** Use different markers for different file types or directories. 🎯
+* **Why This is Lit:** Perfect for when you need to break down a large file into a proper project structure. No more manual copy-pasting!
+
+   ```bash
+   # Example file content:
+   // src/models/user.ts
+   export interface User {
+     id: string;
+     name: string;
+   }
+
+   // src/controllers/user.ts
+   import { User } from '../models/user';
+   export class UserController {
+     // ...
+   }
+
+   # Command to split:
+   split all-in-one.ts "src/" ./output
+   ```
+
 ## 🛠️ How to Use: Getting Started
 
 1.  **Install:**
@@ -83,6 +109,14 @@ Changes committed and pushed successfully.
     npm run clean
     ```
     This will clean all the junk out.
+
+5. **Split Your Files:**
+   ```bash
+   split your-file.ts "marker1,marker2" ./output-dir
+   # or with npm run
+   npm run split your-file.ts "src/,custom/" ./output
+   ```
+   This will split your file based on marker comments into separate files.
 
 ## ⚙️ Configuration: Tweak it Your Way
 
@@ -119,6 +153,14 @@ The magic is in the details! Here's how you can customize each tool:
     clean
     ```
 
+### `split` Options:
+* `[singleFilePath]`: Path to the file you want to split
+* `[markers]`: Comma-separated list of markers to look for
+* `[outputDirPath]`: (Optional) Where to output the split files
+  ```bash
+  split all-in-one.ts "src/,custom/" ./output
+  ```
+
 ## 🧠 AI & the Future of `alvamind-tools`
 
 We're not stopping here! We're constantly thinking about how AI can make our tools even better:
@@ -134,6 +176,7 @@ We're not stopping here! We're constantly thinking about how AI can make our too
 *   **[✅] v1.0.1:** Added include and exclude arguments.
 *   **[✅] v1.0.2:** Added clean functionality
 *   **[✅] v1.0.3:** Added git init and github repo creation on commit command.
+*   **[✅] v1.0.4:** Added split-files functionality
 *   **[ ] v1.1.0:**  Automated commit message generation using AI.
 *   **[ ] v1.2.0:**  Enhanced documentation with AI-powered code summarization.
 *   **[ ] v1.3.0:**  Integration with common CI/CD pipelines.

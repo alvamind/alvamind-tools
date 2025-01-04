@@ -3,6 +3,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import chalk from 'chalk';
 
 const projectDir = process.cwd();
 
@@ -25,51 +26,49 @@ async function cleanProject() {
     'yarn.lock',
     'package-lock.json',
     'pnpm-lock.yaml',
-    '.DS_Store'
-  ]
+    '.DS_Store',
+  ];
 
   try {
     for (const folder of foldersToDelete) {
       const fullPath = path.join(projectDir, folder);
       if (fs.existsSync(fullPath)) {
         fs.rmSync(fullPath, { recursive: true, force: true });
-        console.log(`Deleted: ${folder}`);
+        console.log(`${chalk.green('✓')} Deleted: ${chalk.cyan(folder)}`);
       } else {
-        console.log(`Not found : ${folder}`)
-      }
-    }
-    for (const file of filesToDelete) {
-      const fullPath = path.join(projectDir, file)
-      if (fs.existsSync(fullPath)) {
-        fs.rmSync(fullPath, { force: true });
-        console.log(`Deleted : ${file}`)
-      } else {
-        console.log(`Not found: ${file}`)
+        console.log(`${chalk.yellow('!')} Not found: ${chalk.gray(folder)}`);
       }
     }
 
+    for (const file of filesToDelete) {
+      const fullPath = path.join(projectDir, file);
+      if (fs.existsSync(fullPath)) {
+        fs.rmSync(fullPath, { force: true });
+        console.log(`${chalk.green('✓')} Deleted: ${chalk.cyan(file)}`);
+      } else {
+        console.log(`${chalk.yellow('!')} Not found: ${chalk.gray(file)}`);
+      }
+    }
 
     const generatedDirs = await findGeneratedDirs('.');
     for (const dir of generatedDirs) {
-      const fullPath = path.join(projectDir, dir)
+      const fullPath = path.join(projectDir, dir);
       if (fs.existsSync(fullPath)) {
         fs.rmSync(fullPath, { recursive: true, force: true });
-        console.log(`Deleted generated dir: ${dir}`);
+        console.log(`${chalk.green('✓')} Deleted generated dir: ${chalk.cyan(dir)}`);
       }
     }
 
-    console.log('Done.');
+    console.log(chalk.green('\n✨ Cleaning completed successfully!'));
   } catch (error) {
-    console.error('Error during cleaning:', error);
+    console.error(chalk.red('Error during cleaning:'), error);
     process.exit(1);
   }
-
-
 }
 
 async function findGeneratedDirs(dir: string): Promise<string[]> {
   const entries = fs.readdirSync(path.join(projectDir, dir), { withFileTypes: true });
-  let generatedDirs: string[] = []
+  let generatedDirs: string[] = [];
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -82,5 +81,7 @@ async function findGeneratedDirs(dir: string): Promise<string[]> {
   return generatedDirs;
 }
 
-
-cleanProject().catch((err) => console.error('Error:', err));
+cleanProject().catch((error) => {
+  console.error(chalk.red('Fatal Error:'), error);
+  process.exit(1);
+});

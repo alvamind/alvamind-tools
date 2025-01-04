@@ -12,7 +12,7 @@
     "generate-source": "./dist/generate-source.js",
     "commit": "./dist/commit.js",
     "clean": "./dist/clean.js",
-    "split-files": "./dist/split-files.js"
+    "split": "./dist/split-files.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",

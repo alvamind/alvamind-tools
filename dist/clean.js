@@ -32,9 +32,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
+const chalk_1 = __importDefault(require("chalk"));
 const projectDir = process.cwd();
 function cleanProject() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -56,27 +60,27 @@ function cleanProject() {
             'yarn.lock',
             'package-lock.json',
             'pnpm-lock.yaml',
-            '.DS_Store'
+            '.DS_Store',
         ];
         try {
             for (const folder of foldersToDelete) {
                 const fullPath = path.join(projectDir, folder);
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { recursive: true, force: true });
-                    console.log(`Deleted: ${folder}`);
+                    console.log(`${chalk_1.default.green('✓')} Deleted: ${chalk_1.default.cyan(folder)}`);
                 }
                 else {
-                    console.log(`Not found : ${folder}`);
+                    console.log(`${chalk_1.default.yellow('!')} Not found: ${chalk_1.default.gray(folder)}`);
                 }
             }
             for (const file of filesToDelete) {
                 const fullPath = path.join(projectDir, file);
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { force: true });
-                    console.log(`Deleted : ${file}`);
+                    console.log(`${chalk_1.default.green('✓')} Deleted: ${chalk_1.default.cyan(file)}`);
                 }
                 else {
-                    console.log(`Not found: ${file}`);
+                    console.log(`${chalk_1.default.yellow('!')} Not found: ${chalk_1.default.gray(file)}`);
                 }
             }
             const generatedDirs = yield findGeneratedDirs('.');
@@ -84,13 +88,13 @@ function cleanProject() {
                 const fullPath = path.join(projectDir, dir);
                 if (fs.existsSync(fullPath)) {
                     fs.rmSync(fullPath, { recursive: true, force: true });
-                    console.log(`Deleted generated dir: ${dir}`);
+                    console.log(`${chalk_1.default.green('✓')} Deleted generated dir: ${chalk_1.default.cyan(dir)}`);
                 }
             }
-            console.log('Done.');
+            console.log(chalk_1.default.green('\n✨ Cleaning completed successfully!'));
         }
         catch (error) {
-            console.error('Error during cleaning:', error);
+            console.error(chalk_1.default.red('Error during cleaning:'), error);
             process.exit(1);
         }
     });
@@ -111,4 +115,7 @@ function findGeneratedDirs(dir) {
         return generatedDirs;
     });
 }
-cleanProject().catch((err) => console.error('Error:', err));
+cleanProject().catch((error) => {
+    console.error(chalk_1.default.red('Fatal Error:'), error);
+    process.exit(1);
+});
