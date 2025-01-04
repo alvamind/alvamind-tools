@@ -8,6 +8,7 @@ import chalk from 'chalk';
 const projectDir = process.cwd();
 
 async function cleanProject() {
+  const chalk = (await import('chalk')).default;
   const foldersToDelete = [
     '.bun',
     '.turbo',
