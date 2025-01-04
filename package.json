@@ -9,17 +9,19 @@
     "url": "git+https://github.com/alvamind/alvamind-tools.git"
   },
   "bin": {
-    "generate-source": "./dist/generate-source.js",
-    "commit": "./dist/commit.js",
-    "clean": "./dist/clean.js",
-    "split-code": "./dist/split-files.js"
+    "generate-source": "/dist/generate-source.js",
+    "commit": "/dist/commit.js",
+    "clean": "/dist/clean.js",
+    "split-code": "/dist/split-files.js",
+    "publish-npm": "/dist/npm-publish.js"
   },
   "scripts": {
     "commit": "bun src/commit.ts commit",
     "source": "bun src/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
     "split-code": "bun src/split-files.ts source=all-in-one.ts markers=src/,custom/ outputDir=./output",
-    "build": "tsc && tsc -p tsconfig.build.json",
+    "build": "tsc && tsc -p tsconfig.build.json && chmod +x dist/*.js",
     "clean": "bun src/clean.ts",
+    "publish-npm": "bun src/npm-publish.ts",
     "test": "jest",
     "lint": "eslint src*.ts",
     "format": "prettier --write \"src*.ts\""
@@ -64,5 +66,6 @@
   },
   "engines": {
     "node": ">=14.0.0"
-  }
+  },
+  "preferGlobal": true
 }
