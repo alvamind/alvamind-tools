@@ -10,16 +10,18 @@
   },
   "bin": {
     "generate-source": "./dist/generate-source.js",
-    "commit": "./dist/commit.js"
+    "commit": "./dist/commit.js",
+    "clean": "./dist/clean.js"
   },
   "scripts": {
-    "build": "tsc",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean",
+    "commit": "bun src/commit.ts commit",
+    "source": "bun src/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
+    "build": "tsc && tsc -p tsconfig.build.json",
+    "clean": "bun src/clean.ts",
     "prepare": "npm run build",
     "test": "jest",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "lint": "eslint src*.ts",
+    "format": "prettier --write \"src*.ts\""
   },
   "files": [
     "dist",

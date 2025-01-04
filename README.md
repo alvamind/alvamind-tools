@@ -1,190 +1,151 @@
-# Alvamind Tools 🛠️
+# 🔥 alvamind-tools: Your CLI Power-Up for TypeScript Projects 🚀
 
-![npm version](https://img.shields.io/npm/v/alvamind-tools)
-![License](https://img.shields.io/npm/l/alvamind-tools)
-![Downloads](https://img.shields.io/npm/dm/alvamind-tools)
-[![CI](https://github.com/alvamind/alvamind-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/alvamind/alvamind-tools/actions)
+![alvamind-tools Banner](https://placehold.co/1000x300/00aaff/fff?text=alvamind-tools)
 
-A growing collection of developer tools focused on AI context generation, documentation, and workflow automation.
+Hey there, code slingers! 👋 Welcome to `alvamind-tools`, your new go-to arsenal for supercharging your TypeScript projects. We're talking automation, documentation, and clean-up – all in one slick package. Think of it as your AI sidekick for common dev tasks. 🤖
 
-## 🌟 Features
+## ✨ Features & Benefits: Why You Need This
 
-### Current Tools:
+This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-changer:
 
-#### 1. Source Code Context Generator (`generate-source`)
-Perfect for creating AI prompts and documentation:
-- 📝 Generates clean, formatted source code documentation
-- 🔍 Smart file filtering and organization
-- 🧹 Removes unnecessary comments and whitespace
-- 📊 Provides code structure overview
-- 🎯 Customizable include/exclude patterns
-- 🤖 AI-friendly output format
+### 1. ✍️ Auto Source Code Documentation with `generate-source`
 
-#### 2. Quick Git Tools (`commit`)
-Streamlines git workflow:
-- 🚀 One-command git add, commit, and push
-- ⚡ Automatic status checking
-- 🔄 Smart push handling
-- 💬 Simple commit message interface
+*   **AI-Powered Markdown Magic:** Generates a markdown file of your entire codebase, perfect for documentation or sharing. No more copy-pasting code snippets! 🧙‍♂️
+*   **Project Name Magic:** Automatically includes the project name at the top, so you know exactly what you're looking at. 🏷️
+*   **Comment Slayer:** Strips out those pesky single-line and multi-line comments, keeping your docs clean and focused on the code. 🧹
+*   **Customizable Include/Exclude:** Fine-tune what's included and excluded with regex-powered arguments. Perfect for keeping those test files out of your docs. ✂️
+*   **Line Count Wizardry:** Tells you the total lines of code in your project, because who doesn't love some data? 📊
+*   **Why This is Lit:** Imagine having a up-to-date source code documentation generated every time before you commit. Save you precious time.
 
-### Coming Soon:
-- 🧠 AI Prompt Template Generator
-- 📚 Documentation Builder
-- 🔗 API Context Generator
-- 🎨 UI Component Documenter
-- 📊 Project Stats Analyzer
-- 🔍 Code Search Tools
-- 🛠️ And many more!
+### 2. 🚀 Git Automation with `commit`
 
-## 📦 Installation
+*   **Commit & Push in One Go:**  A single command to add all changes, commit with a message, and push to your remote. No more remembering git commands! 💨
+*   **Safety First:** Checks for changes before committing. If no changes, it'll push existing commits. 🛡️
+*   **User-Friendly Prompts:** Error if commit message is missing. Ain't no sneaky commits going on here! 🚫
+*   **Why This is Lit:** It's like having your own personal git butler. Makes the entire commit process seamless.
 
-```bash
-npm install alvamind-tools --save-dev
-```
+### 3. 🧹  One-Click Project Cleaning with `clean`
 
-## 🚀 Quick Start
+*   **Deep Clean Mastery:**  Clears out all those pesky build directories, cache folders, lock files, and other junk you don't need. 🗑️
+*   **Generated Dir Destroyer:** Automatically finds and deletes all directories named "generated" from the entire project. 💪
+*   **Why This is Lit:** Imagine starting fresh with a clean slate. Perfect for when you just need to nuke everything and start fresh.
 
-Add to your package.json:
-```json
-{
-  "scripts": {
-    "generate-source": "generate-source",
-    "commit": "commit"
-  }
-}
-```
+## 🛠️ How to Use: Getting Started
 
-### Generate Source Code Context
+1.  **Install:**
 
-```bash
-# Basic usage
-npm run generate-source
+    ```bash
+    npm install alvamind-tools -g
+    ```
+2.  **Generate Source Code Doc:**
 
-# Custom output file
-npm run generate-source output=ai-context.md
+    ```bash
+    generate-source --output=source.md --exclude=dist/,README.md,*.test.ts
+    # or with npm run
+    npm run source
+    ```
 
-# Include specific files
-npm run generate-source include=src/*.ts,utils/*.ts
+    This will create a `source.md` file with your source code (excluding the `dist` folder, `README.md` and test files).
 
-# Exclude patterns
-npm run generate-source exclude=*.test.ts,*.spec.ts
-```
+3.  **Commit Your Changes:**
 
-#### Options:
-- `output=filename.md` - Set output file name
-- `include=pattern1,pattern2` - Files to include (glob patterns)
-- `exclude=pattern1,pattern2` - Files to exclude (glob patterns)
+    ```bash
+    commit "Your commit message here"
+    # or with npm run
+    npm run commit "Your commit message here"
+    ```
 
-### Quick Git Commit
+    This will stage all changes, commit with the message, and push to remote.
+4.  **Clean Your Project:**
+    ```bash
+    clean
+    # or with npm run
+    npm run clean
+    ```
+    This will clean all the junk out.
 
-```bash
-# Commit and push changes
-npm run commit "your commit message"
-```
+## ⚙️ Configuration: Tweak it Your Way
 
-## 🎯 Use Cases
+The magic is in the details! Here's how you can customize each tool:
 
-### 1. AI Development Context
-Perfect for:
-- Creating context for AI pair programming
-- Generating documentation prompts
-- Building project overviews
-- Code review assistance
+### `generate-source` Options:
 
-### 2. Documentation
-- Project documentation
-- Code walkthroughs
-- Architecture overviews
-- Team onboarding materials
+*   `--output`:  Specify the output filename (default: `source-code.md`).
+    ```bash
+    generate-source --output=my-awesome-docs.md
+    ```
+*   `--include`:  Comma-separated list of file endings to include, even if they're in default exclude regex.
+    ```bash
+    generate-source --include=route.ts
+    ```
+*   `--exclude`:  Comma-separated list of paths or regex patterns to exclude.
+    ```bash
+    generate-source --exclude=dist/,node_modules/,*.test.ts
+     generate-source --exclude="/.*\.test\.ts$/"
+    ```
+*  *Regex exclude example*
+    ```bash
+       generate-source --exclude="/.*\.route\.ts$/,/.*\.test\.ts$/"
+    ```
+###  `commit` Options:
+    *   No option, all you need is a message after the command
+    ```bash
+    commit "feat: added new feature"
+    ```
 
-### 3. Code Reviews
-- Pull request descriptions
-- Code change summaries
-- Review context generation
+###  `clean` Options:
+    *  No options, it does everything for you.
+    ```bash
+    clean
+    ```
 
-## 🔧 Configuration
+## 🧠 AI & the Future of `alvamind-tools`
 
-### Default Excludes:
-- node_modules
-- .git
-- build directories
-- test files
-- and more...
+We're not stopping here! We're constantly thinking about how AI can make our tools even better:
 
-### Custom Configuration
-Create `.alvamindrc.json` in your project root:
-```json
-{
-  "generateSource": {
-    "excludes": ["*.spec.ts", "*.test.ts"],
-    "includes": ["src/**/*.ts"],
-    "outputFormat": "markdown",
-    "removeComments": true
-  }
-}
-```
+*   **Intelligent Documentation:** Imagine an AI that can automatically generate code comments and README.md based on your source code.
+*   **AI-Powered Code Analysis:** Get suggestions on code improvements, detect potential bugs, and more.
+*   **Automated Refactoring:** Let AI take care of the heavy lifting of code refactoring.
+*   **Personalized Recommendations:** Based on your project setup, our AI would suggest which tools to use.
 
-## 📚 Examples
+## 🗺️ Roadmap: What's Next?
 
-### AI Context Generation
-```bash
-# Generate context for specific feature
-npm run generate-source output=auth-feature.md include=src/auth/**/*
+*   **[✅] v1.0.0:** Initial release with `generate-source` and `commit` tools
+*   **[✅] v1.0.1:** Added include and exclude arguments.
+*   **[✅] v1.0.2:** Added clean functionality
+*   **[ ] v1.1.0:**  Automated commit message generation using AI.
+*   **[ ] v1.2.0:**  Enhanced documentation with AI-powered code summarization.
+*   **[ ] v1.3.0:**  Integration with common CI/CD pipelines.
 
-# Create documentation context
-npm run generate-source output=docs-context.md include=src/docs/**/*
-```
+## 💖 Support & Donation: Fuel Our Development
 
-### Documentation Generation
-```bash
-# Generate project overview
-npm run generate-source output=project-overview.md
+If `alvamind-tools` makes your life easier, consider showing some love! You can help us keep developing by:
 
-# Create API documentation
-npm run generate-source output=api-docs.md include=src/api/**/*
-```
+*   **Starring the Repo:** Head to our GitHub and give us a star! ⭐
+*   **Contributing Code:**  See a way to make it better? Fork and send us a pull request! 🛠️
+*   **Donating:** Buy us a coffee via [PayPal](https://paypal.me/alvamind). ☕
+*   **Sharing:** Spread the word with fellow devs! 🗣️
 
-## 🤝 Contributing
+## 🤝 Contribution: Join the Squad
 
-We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
+We're an open-source project, and we welcome contributors! Whether you're a coding pro or just getting started, there's a place for you in our squad. To contribute:
 
-### Development Setup
-```bash
-# Clone repo
-git clone https://github.com/alvamind/alvamind-tools.git
-
-# Install dependencies
-npm install
-
-# Run tests
-npm test
-
-# Build
-npm run build
-```
+1.  **Fork the Repo:** Create your own copy on GitHub.
+2.  **Make Changes:** Add your magic and test your code.
+3.  **Create a Pull Request:** Let us know your changes are ready for review!
+4.  **Review:** After review, your code will be merged!
 
 ## 📜 License
 
-MIT © [Alvamind](LICENSE)
+`alvamind-tools` is released under the MIT License. Do what you want with it, no worries! 🤘
 
-## 🔗 Links
-- [NPM Package](https://www.npmjs.com/package/alvamind-tools)
-- [GitHub Repository](https://github.com/alvamind/alvamind-tools)
-- [Documentation](https://github.com/alvamind/alvamind-tools#readme)
-- [Issues](https://github.com/alvamind/alvamind-tools/issues)
+## 🤔 Questions?
 
-## 🎉 Support
+Have a question or need help? Open an issue on our GitHub page, and we'll get back to you. 💬
 
-If you find this tool helpful, please give it a ⭐️ on GitHub!
+<br>
+<br>
 
-For issues, feature requests, or support:
-- 🐛 [File an issue](https://github.com/alvamind/alvamind-tools/issues)
-- 💡 [Feature requests](https://github.com/alvamind/alvamind-tools/issues)
-- 📧 [Email support](mailto:support@alvamind.com)
+***
 
-## 🗺️ Roadmap
-
-See our [project roadmap](https://github.com/alvamind/alvamind-tools/projects) for upcoming features and improvements.
-
----
-Made with ❤️ by [Alvamind](https://github.com/alvamind)
+_Built with passion by the Alvamind Team_ 💖

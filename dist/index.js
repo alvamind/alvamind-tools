@@ -16,3 +16,4 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./generate-source"), exports);
 __exportStar(require("./commit"), exports);
+__exportStar(require("./clean"), exports);

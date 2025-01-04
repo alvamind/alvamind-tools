@@ -16,23 +16,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -47,8 +37,9 @@ const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 // Ubah agar bisa mengakses directory project yang menggunakan package
 const projectDir = process.cwd();
-function generateSourceCodeMarkdown() {
-    return __awaiter(this, arguments, void 0, function* (outputFilename = 'source-code.md', customInclude = [], customExclude = []) {
+function generateSourceCodeMarkdown(outputFilename = 'source-code.md', customInclude = [], customExclude = []) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const projectName = path.basename(projectDir); // ambil nama project dari root dir
         const excludedPathsAndFiles = [
             'node_modules',
             '.git',
@@ -65,9 +56,8 @@ function generateSourceCodeMarkdown() {
             'documentation/tsyringe-neo.md',
             'src/common/utils',
             outputFilename,
-            ...customExclude,
         ];
-        const defaultExcludes = [/\.route\.ts$/, /\.test\.ts$/];
+        const defaultExcludes = [];
         // Updated regex to handle both single-line and multi-line comments
         const singleLineCommentRegex = /^\s*\/\/.*$/gm;
         const multiLineCommentRegex = /\/\*[\s\S]*?\*\//g;
@@ -75,14 +65,33 @@ function generateSourceCodeMarkdown() {
         let allFiles = [];
         function isExcluded(filePath) {
             const normalizedFilePath = path.normalize(filePath);
-            if (excludedPathsAndFiles.includes(normalizedFilePath)) {
+            if (excludedPathsAndFiles.includes(normalizedFilePath) ||
+                excludedPathsAndFiles.some((excludedPath) => normalizedFilePath.startsWith(path.normalize(excludedPath) + '/'))) {
                 return true;
             }
-            if (excludedPathsAndFiles.some((excludedPath) => normalizedFilePath.startsWith(path.normalize(excludedPath) + '/'))) {
-                return true;
-            }
-            const isDefaultExcluded = defaultExcludes.some((regex) => regex.test(normalizedFilePath));
-            if (isDefaultExcluded && !customInclude.some((include) => normalizedFilePath.endsWith(include))) {
+            // Convert glob patterns to regex patterns
+            const isCustomExcluded = customExclude.some((exclude) => {
+                try {
+                    let pattern = exclude;
+                    if (!exclude.startsWith('/') || !exclude.endsWith('/')) {
+                        // Convert glob pattern to regex pattern
+                        pattern = exclude
+                            .replace(/\./g, '\\.') // Escape dots
+                            .replace(/\*/g, '.*'); // Convert * to .*
+                    }
+                    else {
+                        // If it's already a regex pattern (enclosed in //)
+                        pattern = exclude.slice(1, -1);
+                    }
+                    const regex = new RegExp(pattern);
+                    return regex.test(normalizedFilePath);
+                }
+                catch (e) {
+                    console.error(`Invalid regex: ${exclude}`, e);
+                    return false;
+                }
+            });
+            if (isCustomExcluded && !customInclude.some((include) => normalizedFilePath.endsWith(include))) {
                 return true;
             }
             return false;
@@ -107,7 +116,8 @@ function generateSourceCodeMarkdown() {
         traverseDir('.');
         const filteredPaths = allPaths.filter((p) => !isExcluded(p));
         const filteredFiles = allFiles.filter((f) => !isExcluded(f));
-        let output = filteredPaths.join('\n') + '\n====================\n';
+        let output = `# Project: ${projectName}\n\n`; // Tambahin judul project di awal output
+        output += filteredPaths.join('\n') + '\n====================\n';
         let totalLines = 0;
         for (const file of filteredFiles) {
             output += `// ${file}\n`;
@@ -140,7 +150,16 @@ args.forEach((arg) => {
         customInclude = arg.split('=')[1].split(',');
     }
     else if (arg.startsWith('exclude=')) {
-        customExclude = arg.split('=')[1].split(',');
+        try {
+            const excludeValue = arg.split('=')[1];
+            if (excludeValue) {
+                customExclude = excludeValue.split(',').map((pattern) => pattern.trim());
+            }
+        }
+        catch (error) {
+            console.error('Error parsing exclude patterns:', error);
+            customExclude = [];
+        }
     }
 });
 generateSourceCodeMarkdown(outputFilename, customInclude, customExclude).catch((err) => console.error('Error:', err));
