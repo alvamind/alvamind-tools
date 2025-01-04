@@ -176,7 +176,7 @@ We're not stopping here! We're constantly thinking about how AI can make our too
 *   **[✅] v1.0.1:** Added include and exclude arguments.
 *   **[✅] v1.0.2:** Added clean functionality
 *   **[✅] v1.0.3:** Added git init and github repo creation on commit command.
-*   **[✅] v1.0.4:** Added split-files functionality
+*   **[✅] v1.0.5:** Added split-files functionality
 *   **[ ] v1.1.0:**  Automated commit message generation using AI.
 *   **[ ] v1.2.0:**  Enhanced documentation with AI-powered code summarization.
 *   **[ ] v1.3.0:**  Integration with common CI/CD pipelines.
