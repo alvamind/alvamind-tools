@@ -50,13 +50,24 @@ async function commitAndPush() {
       console.log(chalk.green('✅ Git repository initialized.'));
     }
 
-    // Check if gh is installed
+    // Stage and commit changes first
+    const status = execSync('git status --porcelain').toString();
+    if (!status) {
+      console.log(chalk.yellow('ℹ️  No changes to commit.'));
+      process.exit(0);
+    }
+
+    console.log(chalk.cyan('📝 Staging all changes...'));
+    execSync('git add .', { stdio: 'inherit' });
+    console.log(chalk.cyan('💾 Committing changes...'));
+    execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
+
+    // Now check for gh and create remote repository if needed
     if (await !isGhInstalled()) {
       console.log(
         chalk.yellow('⚠️  GitHub CLI (gh) is not installed. Skipping remote repository creation.')
       );
     } else {
-      // Check if a remote repo exists on github
       console.log(chalk.cyan('🔍 Checking for remote repository...'));
       try {
         execSync('gh repo view', { stdio: 'ignore' });
@@ -72,24 +83,12 @@ async function commitAndPush() {
       }
     }
 
-    const status = execSync('git status --porcelain').toString();
-    if (!status) {
-      console.log(chalk.yellow('ℹ️  No changes to commit.'));
-      process.exit(0);
-    }
-
-    console.log(chalk.cyan('📝 Staging all changes...'));
-    execSync('git add .', { stdio: 'inherit' });
-    console.log(chalk.cyan('💾 Committing changes...'));
-    execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
-
-    // Check if the branch has an upstream
+    // Push changes
     try {
       execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { stdio: 'ignore' });
       console.log(chalk.cyan('⬆️  Pushing changes...'));
       execSync('git push', { stdio: 'inherit' });
     } catch (error) {
-      // No upstream set
       const remoteName = 'origin';
       const branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
       console.log(chalk.cyan(`⬆️  Setting upstream and pushing to ${remoteName}/${branchName}...`));
