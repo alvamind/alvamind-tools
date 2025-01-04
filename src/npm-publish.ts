@@ -10,6 +10,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+// Get command line arguments
+const [, , versionArg, commitMessageArg] = process.argv;
+
 async function askQuestion(query: string): Promise<string> {
   return new Promise((resolve) => {
     rl.question(query, resolve);
@@ -41,6 +44,11 @@ function validatePackageJson(): void {
 }
 
 async function selectVersionType(): Promise<string> {
+  // If version type is provided via command line, use it
+  if (versionArg && ['patch', 'minor', 'major'].includes(versionArg)) {
+    return versionArg;
+  }
+
   console.log(chalk.cyan('\nSelect version increment type:'));
   console.log(chalk.gray('1. patch (1.0.0 -> 1.0.1)'));
   console.log(chalk.gray('2. minor (1.0.0 -> 1.1.0)'));
@@ -54,6 +62,19 @@ async function selectVersionType(): Promise<string> {
   };
 
   return versionMap[answer] || 'patch';
+}
+
+async function getCommitMessage(): Promise<string> {
+  // If commit message is provided via command line, use it
+  if (commitMessageArg) {
+    return commitMessageArg;
+  }
+
+  const message = await askQuestion(chalk.cyan('Enter commit message: '));
+  if (!message.trim()) {
+    throw new Error('Commit message is required');
+  }
+  return message;
 }
 
 async function publishPackage() {
@@ -74,10 +95,7 @@ async function publishPackage() {
     // Check for uncommitted changes
     if (!checkGitStatus()) {
       console.log(chalk.yellow('⚠️  You have uncommitted changes'));
-      const commitMessage = await askQuestion(chalk.cyan('Enter commit message: '));
-      if (!commitMessage.trim()) {
-        throw new Error('Commit message is required');
-      }
+      const commitMessage = await getCommitMessage();
       execSync(`bun commit "${commitMessage}"`, { stdio: 'inherit' });
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     "split-code": "bun src/split-files.ts source=all-in-one.ts markers=src/,custom/ outputDir=./output",
     "build": "bunx tsc && bunx tsc -p tsconfig.build.json && chmod +x dist/*.js",
     "clean": "bun src/clean.ts",
-    "publish-npm": "bun src/npm-publish.ts",
+    "publish-npm": "bun src/npm-publish.ts patch",
     "test": "jest",
     "lint": "eslint src*.ts",
     "format": "prettier --write \"src*.ts\""
