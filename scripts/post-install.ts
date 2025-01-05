@@ -44,7 +44,7 @@ async function postInstall() {
     • npm run commit       → commit and push changes
     • npm run clean        → clean project folders
     • npm run split-code   → split combined code files
-    • npm run publish-pkg  → publish to npm
+    • npm run publish-npm  → publish to npm
     `));
 
         // Ask for confirmation
@@ -62,7 +62,7 @@ async function postInstall() {
     2. Use ${chalk.cyan('npm run commit "your message"')} for git operations
     3. Try ${chalk.cyan('npm run clean')} to cleanup project
     4. Split code with ${chalk.cyan('npm run split-code')}
-    5. Publish with ${chalk.cyan('npm run publish-pkg')}
+    5. Publish with ${chalk.cyan('npm run publish-npm')}
         `));
             } catch (error) {
                 console.error(chalk.red('\n❌ Error adding scripts:'), error);

@@ -11,7 +11,7 @@ const exampleScripts = {
     'source': 'generate-source output=documentation.md exclude=dist/,node_modules/,.git/',
 
     // Git commit and push
-    'commit': 'commit "your commit message"',
+    'commit': 'commit',
 
     // Clean project folders and files
     'clean': 'clean',
@@ -20,7 +20,7 @@ const exampleScripts = {
     'split-code': 'split-code source=combined.ts markers=src/,lib/ outputDir=./output',
 
     // NPM publish helper
-    'publish-package': 'publish-npm patch'
+    'publish-npm': 'publish-npm patch'
 };
 
 async function addScriptsToPackageJson() {
