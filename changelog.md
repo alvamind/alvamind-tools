@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
     -   Fix: prevent error when deleting a file or folder not existing.
 
+## [1.0.6] - 2025-01-05
+### Added
+-   **`add-json-script` CLI Tool:**
+    -   Adds example scripts to your `package.json` file for all available tools.
+    -   Asks for user confirmation before adding the scripts.
+
 ## [1.0.1] - 2025-01-02
 
 ### Added

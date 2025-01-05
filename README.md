@@ -58,6 +58,12 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
 * **Multiple Markers Support:** Use different markers for different file types or directories. 🎯
 * **Why This is Lit:** Perfect for when you need to break down a large file into a proper project structure. No more manual copy-pasting!
 
+### 5. ⚙️ Add Example Scripts with `add-json-script`
+
+* **Adds Example Scripts:** Adds example scripts to your `package.json` file for all available tools.
+* **User Confirmation:** Asks for user confirmation before adding the scripts.
+* **Why This is Lit:** Makes it easy to get started with all the available tools by adding working example scripts to your project.
+
       ```bash
       # Example file content:
       // src/models/user.ts
@@ -118,6 +124,14 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
    ```
    This will split your file based on marker comments into separate files.
 
+6. **Add Example Scripts:**
+   ```bash
+   add-json-script
+   # or with npm run
+   npm run add-json-script
+   ```
+   This will add example scripts to your package.json file.
+
 ## ⚙️ Configuration: Tweak it Your Way
 
 The magic is in the details! Here's how you can customize each tool:
@@ -177,6 +191,7 @@ We're not stopping here! We're constantly thinking about how AI can make our too
 *   **[✅] v1.0.2:** Added clean functionality
 *   **[✅] v1.0.3:** Added git init and github repo creation on commit command.
 *   **[✅] v1.0.5:** Added split-files functionality
+*   **[✅] v1.0.6:** Added add-json-script functionality
 *   **[ ] v1.1.0:**  Automated commit message generation using AI.
 *   **[ ] v1.2.0:**  Enhanced documentation with AI-powered code summarization.
 *   **[ ] v1.3.0:**  Integration with common CI/CD pipelines.
