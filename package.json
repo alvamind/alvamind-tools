@@ -9,12 +9,12 @@
     "url": "git+https://github.com/alvamind/alvamind-tools.git"
   },
   "bin": {
-    "generate-source": "./dist/tools/generate-source.js",
-    "commit": "./dist/tools/commit.js",
-    "clean": "./dist/tools/clean.js",
-    "split-code": "./dist/tools/split-files.js",
-    "publish-npm": "./dist/tools/npm-publish.js",
-    "add-json-script": "./dist/add-json-script.js"
+    "generate-source": "./dist/src/tools/generate-source.js",
+    "commit": "./dist/src/tools/commit.js",
+    "clean": ".dist/src/tools/clean.js",
+    "split-code": "./dist/src/tools/split-files.js",
+    "publish-npm": "./dist/src/tools/npm-publish.js",
+    "add-json-script": "./dist/src/add-json-script.js"
   },
   "scripts": {
     "commit": "bun src/tools/commit.ts commit",
@@ -25,8 +25,7 @@
     "publish-npm": "bun src/tools/npm-publish.ts patch",
     "test": "jest",
     "lint": "eslint src*.ts",
-    "format": "prettier --write \"src*.ts\"",
-    "postinstall": "node ./dist/scripts/post-install.js"
+    "format": "prettier --write \"src*.ts\""
   },
   "files": [
     "dist",
@@ -52,7 +51,7 @@
   },
   "homepage": "https://github.com/alvamind/alvamind-tools#readme",
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "4.1.2",
     "glob": "^8.1.0"
   },
   "devDependencies": {

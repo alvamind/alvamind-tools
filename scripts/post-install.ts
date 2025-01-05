@@ -65,7 +65,7 @@ async function postInstall() {
     5. Publish with ${chalk.cyan('npm run publish-npm')}
         `));
             } catch (error) {
-                console.error(chalk.red('\n❌ Error adding scripts:'), error);
+                console.error(chalk.red('\n❌ Error adding scripts:', error));
             }
         } else {
             console.log(chalk.yellow('\nℹ️  Scripts not added. You can add them later using:'));
@@ -79,7 +79,7 @@ async function postInstall() {
         console.log('\n' + '='.repeat(80) + '\n');
 
     } catch (error) {
-        console.error(chalk.red('Error during post-install:'), error);
+        console.error(chalk.red('Error during post-install:', error));
     } finally {
         rl.close();
     }
