@@ -3,13 +3,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
+import glob from 'glob'; // Add glob package for better file matching
 
 const projectDir = process.cwd();
 
 interface GenerateOptions {
   outputFilename: string;
-  includePaths: string[];
-  excludePaths: string[];
+  includePatterns: string[];
+  excludePatterns: string[];
   removeBlankLines: boolean;
   removeComments: boolean;
 }
@@ -17,8 +18,8 @@ interface GenerateOptions {
 async function generateSourceCodeMarkdown(options: GenerateOptions) {
   const {
     outputFilename = 'source-code.md',
-    includePaths = [],
-    excludePaths = [],
+    includePatterns = [],
+    excludePatterns = [],
     removeBlankLines = true,
     removeComments = true,
   } = options;
@@ -28,104 +29,79 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
   console.log(chalk.cyan.bold('\n📝 Generating Source Code Documentation'));
   console.log(chalk.dim('=====================================\n'));
 
-  // Default excluded paths
-  const defaultExcludedPaths = [
-    'node_modules',
-    '.git',
-    'generate-source.ts',
-    '.zed-settings.json',
-    '.vscode/settings.json',
-    'package-lock.json',
-    'bun.lockb',
-    'build',
+  // Default excluded patterns
+  const defaultExcludedPatterns = [
+    '**/node_modules/**',
+    '**/.git/**',
+    '**/generate-source.ts',
+    '**/.zed-settings.json',
+    '**/.vscode/settings.json',
+    '**/package-lock.json',
+    '**/bun.lockb',
+    '**/build/**',
     outputFilename,
   ];
 
   const singleLineCommentRegex = /^\s*\/\/.*$/gm;
   const multiLineCommentRegex = /\/\*[\s\S]*?\*\//g;
 
-  let allPaths: string[] = [];
-  let allFiles: string[] = [];
+  // Helper function to get all matching files
+  function getMatchingFiles(): string[] {
+    const allFiles: string[] = [];
 
-  function isExcluded(filePath: string): boolean {
-    const normalizedFilePath = path.normalize(filePath);
-
-    // Check default exclusions
-    if (
-      defaultExcludedPaths.some(
-        (excludedPath) =>
-          normalizedFilePath === excludedPath ||
-          normalizedFilePath.startsWith(path.normalize(excludedPath) + path.sep)
-      )
-    ) {
-      return true;
-    }
-
-    // Check custom exclusions
-    if (
-      excludePaths.some((excludePath) => {
-        const normalizedExcludePath = path.normalize(excludePath);
-        return normalizedFilePath.startsWith(normalizedExcludePath);
-      })
-    ) {
-      return true;
-    }
-
-    // If include paths are specified, only include files within those paths
-    if (includePaths.length > 0) {
-      return !includePaths.some((includePath) => {
-        const normalizedIncludePath = path.normalize(includePath);
-        return normalizedFilePath.startsWith(normalizedIncludePath);
+    // If specific files/patterns are included
+    if (includePatterns.length > 0) {
+      includePatterns.forEach((pattern) => {
+        // Handle both specific files and glob patterns
+        const matches = glob.sync(pattern.includes('*') ? pattern : `**/${pattern}`, {
+          cwd: projectDir,
+          ignore: [...defaultExcludedPatterns, ...excludePatterns],
+          nodir: true,
+        });
+        allFiles.push(...matches);
       });
+    } else {
+      // If no specific includes, get all files except excluded ones
+      const matches = glob.sync('**/*', {
+        cwd: projectDir,
+        ignore: [...defaultExcludedPatterns, ...excludePatterns],
+        nodir: true,
+      });
+      allFiles.push(...matches);
     }
 
-    return false;
-  }
-
-  function traverseDir(dir: string) {
-    const entries = fs.readdirSync(path.join(projectDir, dir), { withFileTypes: true });
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-
-      if (isExcluded(fullPath)) {
-        continue;
-      }
-
-      if (entry.isDirectory()) {
-        allPaths.push(fullPath);
-        traverseDir(fullPath);
-      } else if (entry.isFile()) {
-        allFiles.push(fullPath);
-      }
-    }
+    return [...new Set(allFiles)]; // Remove duplicates
   }
 
   console.log(chalk.yellow('🔍 Scanning project files...'));
-  traverseDir('.');
+  const matchingFiles = getMatchingFiles();
 
-  const filteredPaths = allPaths.filter((p) => !isExcluded(p));
-  const filteredFiles = allFiles.filter((f) => !isExcluded(f));
+  // Get directories from matching files
+  const directories = [
+    ...new Set(matchingFiles.map((file) => path.dirname(file)).filter((dir) => dir !== '.')),
+  ];
 
   // Log scanning results
   console.log(
     chalk.green(
-      `✓ Found ${chalk.bold(filteredFiles.length)} files in ${chalk.bold(filteredPaths.length)} directories\n`
+      `✓ Found ${chalk.bold(matchingFiles.length)} files in ${chalk.bold(directories.length)} directories\n`
     )
   );
 
   // Generate markdown content
   let output = `# Project: ${projectName}\n\n`;
 
-  output += `## 📂 Included Paths:\n${
-    includePaths.length ? includePaths.map((p) => `- ${p}`).join('\n') : '- (all project files)'
+  output += `## 📂 Included Patterns:\n${
+    includePatterns.length
+      ? includePatterns.map((p) => `- ${p}`).join('\n')
+      : '- (all project files)'
   }\n\n`;
 
-  output += `## 🚫 Excluded Paths:\n${[...defaultExcludedPaths, ...excludePaths]
+  output += `## 🚫 Excluded Patterns:\n${[...defaultExcludedPatterns, ...excludePatterns]
     .map((p) => `- ${p}`)
     .join('\n')}\n\n`;
 
-  output += `## 📁 Directory Structure:\n${filteredPaths.map((p) => `- ${p}`).join('\n')}\n\n`;
+  output += `## 📁 Directory Structure:\n${directories.map((p) => `- ${p}`).join('\n')}\n\n`;
 
   output += '## 💻 Source Code:\n====================\n\n';
 
@@ -134,9 +110,9 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
 
   console.log(chalk.yellow('📋 Processing files...'));
 
-  for (const file of filteredFiles) {
+  for (const file of matchingFiles) {
     process.stdout.write(
-      `\r${chalk.dim(`Processing: ${processedFiles}/${filteredFiles.length} files`)}`
+      `\r${chalk.dim(`Processing: ${processedFiles}/${matchingFiles.length} files`)}`
     );
 
     output += `// ${file}\n`;
@@ -155,7 +131,7 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
         .filter((line) => line.trim() !== '')
         .join('\n');
     } else {
-      // Just remove excessive blank lines (more than one consecutive blank line)
+      // Just remove excessive blank lines
       content = content.replace(/\n\s*\n\s*\n/g, '\n\n');
     }
 
@@ -176,8 +152,8 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
   console.log(chalk.dim('────────────────────────────────────'));
   console.log(chalk.white(`📊 Statistics:`));
   console.log(chalk.dim(`• Output file: ${chalk.cyan(outputFilename)}`));
-  console.log(chalk.dim(`• Total files: ${chalk.cyan(filteredFiles.length)}`));
-  console.log(chalk.dim(`• Total directories: ${chalk.cyan(filteredPaths.length)}`));
+  console.log(chalk.dim(`• Total files: ${chalk.cyan(matchingFiles.length)}`));
+  console.log(chalk.dim(`• Total directories: ${chalk.cyan(directories.length)}`));
   console.log(chalk.dim(`• Total lines of code: ${chalk.cyan(totalLines)}`));
   console.log(
     chalk.dim(`• Blank lines: ${chalk.cyan(removeBlankLines ? 'Removed' : 'Preserved')}`)
@@ -189,8 +165,8 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
 function parseArgs(args: string[]): GenerateOptions {
   const options: GenerateOptions = {
     outputFilename: 'source-code.md',
-    includePaths: [],
-    excludePaths: [],
+    includePatterns: [],
+    excludePatterns: [],
     removeBlankLines: true,
     removeComments: true,
   };
@@ -202,15 +178,17 @@ function parseArgs(args: string[]): GenerateOptions {
       if (arg.startsWith('--output=')) {
         options.outputFilename = arg.split('=')[1];
       } else if (arg.startsWith('--include=')) {
-        options.includePaths = arg
+        options.includePatterns = arg
           .split('=')[1]
           .split(',')
-          .map((p) => p.trim());
+          .map((p) => p.trim())
+          .filter((p) => p); // Remove empty entries
       } else if (arg.startsWith('--exclude=')) {
-        options.excludePaths = arg
+        options.excludePatterns = arg
           .split('=')[1]
           .split(',')
-          .map((p) => p.trim());
+          .map((p) => p.trim())
+          .filter((p) => p);
       } else if (arg === '--preserve-blank-lines') {
         options.removeBlankLines = false;
       } else if (arg === '--preserve-comments') {
@@ -223,7 +201,7 @@ function parseArgs(args: string[]): GenerateOptions {
     console.log(chalk.yellow('\nUsage:'));
     console.log(
       chalk.dim(
-        'generate-source --include=src/,scripts/ --exclude=src/tests --output=docs.md --preserve-blank-lines --preserve-comments\n'
+        'generate-source --include=main.test.ts,test.interface.ts --exclude=dist/,build/ --output=docs.md\n'
       )
     );
     process.exit(1);
