@@ -15,6 +15,7 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
 *   **Comment Slayer:** Strips out those pesky single-line and multi-line comments, keeping your docs clean and focused on the code. 🧹
 *   **Customizable Include/Exclude:** Fine-tune what's included and excluded with regex-powered arguments. Perfect for keeping those test files out of your docs. ✂️
 *   **Line Count Wizardry:** Tells you the total lines of code in your project, because who doesn't love some data? 📊
+*   **Blank Line Removal:** Optionally remove all blank lines from the generated Markdown file for a cleaner look. 🧼
 *   **Why This is Lit:** Imagine having a up-to-date source code documentation generated every time before you commit. Save you precious time.
 
 ### 2. 🚀 Git Automation with `commit`
@@ -42,7 +43,7 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
       Setting upstream...
       Upstream set successfully.
       Changes committed and pushed successfully.
-          ```
+       ```
 
 ### 3. 🧹  One-Click Project Cleaning with `clean`
 
@@ -92,12 +93,12 @@ This ain't your grandma's CLI toolset. Here's why `alvamind-tools` is a game-cha
 2.  **Generate Source Code Doc:**
 
     ```bash
-    generate-source --output=source.md --exclude=dist/,README.md,*.test.ts
+    generate-source --output=source.md --exclude=dist/,README.md,*.test.ts --remove-blank-lines
     # or with npm run
     npm run source
     ```
 
-    This will create a `source.md` file with your source code (excluding the `dist` folder, `README.md` and test files).
+    This will create a `source.md` file with your source code (excluding the `dist` folder, `README.md` and test files), and remove all blank lines.
 
 3.  **Commit Your Changes:**
 
@@ -155,6 +156,11 @@ The magic is in the details! Here's how you can customize each tool:
     ```bash
        generate-source --exclude="/.*\.route\.ts$/,/.*\.test\.ts$/"
     ```
+*   `--remove-blank-lines`:  Remove all blank lines from the generated Markdown file.
+    ```bash
+    generate-source --remove-blank-lines
+    ```
+
 ###  `commit` Options:
     *   No option, all you need is a message after the command
     ```bash
@@ -192,6 +198,7 @@ We're not stopping here! We're constantly thinking about how AI can make our too
 *   **[✅] v1.0.3:** Added git init and github repo creation on commit command.
 *   **[✅] v1.0.5:** Added split-files functionality
 *   **[✅] v1.0.6:** Added add-json-script functionality
+*   **[✅] v1.0.7:** Added remove-blank-lines functionality
 *   **[ ] v1.1.0:**  Automated commit message generation using AI.
 *   **[ ] v1.2.0:**  Enhanced documentation with AI-powered code summarization.
 *   **[ ] v1.3.0:**  Integration with common CI/CD pipelines.

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-01-06
+### Added
+-   **`generate-source` CLI Tool:**
+    -   Added `--remove-blank-lines` option to remove all blank lines from the generated Markdown file.
+
+## [1.0.6] - 2025-01-05
+### Added
+-   **`add-json-script` CLI Tool:**
+    -   Adds example scripts to your `package.json` file for all available tools.
+    -   Asks for user confirmation before adding the scripts.
+
 ## [1.0.3] - 2025-01-04
 ### Added
 -   **`commit` CLI Tool:**

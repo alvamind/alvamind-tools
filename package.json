@@ -1,6 +1,6 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "commit": "bun src/tools/commit.ts commit",
-    "source": "bun src/tools/generate-source.ts output=source.md exclude=dist/,README.md,nats-rpc.test.ts,rpc-nats-alvamind-1.0.0.tgz,.gitignore",
+    "source": "bun src/tools/generate-source.ts --include=src/ --exclude=src/tests --output=docs.md",
     "split-code": "bun src/tools/split-files.ts source=all-in-one.ts markers=src/,custom/ outputDir=./output",
     "build": "bunx tsc && bunx tsc -p tsconfig.build.json && chmod +x dist/tools/*.js",
     "clean": "bun src/tools/clean.ts",
