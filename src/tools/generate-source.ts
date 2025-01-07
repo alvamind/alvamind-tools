@@ -48,11 +48,16 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
   function getMatchingFiles(): string[] {
     const allFiles: string[] = [];
 
+    // Convert patterns like "*.route.ts" to "**/*.route.ts" to match in all directories
+    const processedExcludePatterns = excludePatterns.map((pattern) =>
+      pattern.startsWith('*') && !pattern.startsWith('**') ? `**/${pattern}` : pattern
+    );
+
     if (includePatterns.length > 0) {
       includePatterns.forEach((pattern) => {
         const matches = glob.sync(pattern.includes('*') ? pattern : `**/${pattern}`, {
           cwd: projectDir,
-          ignore: [...defaultExcludedPatterns, ...excludePatterns],
+          ignore: [...defaultExcludedPatterns, ...processedExcludePatterns],
           nodir: true,
         });
         allFiles.push(...matches);
@@ -60,7 +65,7 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
     } else {
       const matches = glob.sync('**/*', {
         cwd: projectDir,
-        ignore: [...defaultExcludedPatterns, ...excludePatterns],
+        ignore: [...defaultExcludedPatterns, ...processedExcludePatterns],
         nodir: true,
       });
       allFiles.push(...matches);
