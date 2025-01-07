@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import glob from 'glob'; // Add glob package for better file matching
+import glob from 'glob';
 
 const projectDir = process.cwd();
 
@@ -26,12 +26,12 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
 
   const projectName = path.basename(projectDir);
 
-  console.log(chalk.cyan.bold('\n📝 Generating Source Code Documentation'));
+  console.log(chalk.cyan.bold('\n📝 Generating Source Code Doc'));
   console.log(chalk.dim('=====================================\n'));
 
-  // Default excluded patterns
   const defaultExcludedPatterns = [
     '**/node_modules/**',
+    '**/dist/**',
     '**/.git/**',
     '**/generate-source.ts',
     '**/.zed-settings.json',
@@ -45,14 +45,11 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
   const singleLineCommentRegex = /^\s*\/\/.*$/gm;
   const multiLineCommentRegex = /\/\*[\s\S]*?\*\//g;
 
-  // Helper function to get all matching files
   function getMatchingFiles(): string[] {
     const allFiles: string[] = [];
 
-    // If specific files/patterns are included
     if (includePatterns.length > 0) {
       includePatterns.forEach((pattern) => {
-        // Handle both specific files and glob patterns
         const matches = glob.sync(pattern.includes('*') ? pattern : `**/${pattern}`, {
           cwd: projectDir,
           ignore: [...defaultExcludedPatterns, ...excludePatterns],
@@ -61,7 +58,6 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
         allFiles.push(...matches);
       });
     } else {
-      // If no specific includes, get all files except excluded ones
       const matches = glob.sync('**/*', {
         cwd: projectDir,
         ignore: [...defaultExcludedPatterns, ...excludePatterns],
@@ -70,45 +66,51 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
       allFiles.push(...matches);
     }
 
-    return [...new Set(allFiles)]; // Remove duplicates
+    return [...new Set(allFiles)];
   }
 
-  console.log(chalk.yellow('🔍 Scanning project files...'));
+  console.log(chalk.yellow('🔍 Scanning...'));
   const matchingFiles = getMatchingFiles();
 
-  // Get directories from matching files
   const directories = [
     ...new Set(matchingFiles.map((file) => path.dirname(file)).filter((dir) => dir !== '.')),
   ];
 
-  // Log scanning results
   console.log(
     chalk.green(
-      `✓ Found ${chalk.bold(matchingFiles.length)} files in ${chalk.bold(directories.length)} directories\n`
+      `✓ Found ${chalk.bold(matchingFiles.length)} files in ${chalk.bold(directories.length)} dirs\n`
     )
   );
 
-  // Generate markdown content
   let output = `# Project: ${projectName}\n\n`;
 
-  output += `## 📂 Included Patterns:\n${
-    includePatterns.length
-      ? includePatterns.map((p) => `- ${p}`).join('\n')
-      : '- (all project files)'
-  }\n\n`;
+  output += `## 📁 Dir Structure:\n${directories
+    .map((dir) => {
+      // Get files for this directory
+      const dirFiles = matchingFiles.filter((file) => path.dirname(file) === dir);
 
-  output += `## 🚫 Excluded Patterns:\n${[...defaultExcludedPatterns, ...excludePatterns]
+      // Return directory with its files indented
+      return `- ${dir}/\n${dirFiles.map((file) => `  • ${path.basename(file)}`).join('\n')}`;
+    })
+    .join('\n')}\n\n`;
+
+  const rootFiles = matchingFiles.filter((file) => path.dirname(file) === '.');
+  if (rootFiles.length > 0) {
+    output += `- ./\n${rootFiles.map((file) => `  • ${file}`).join('\n')}\n`;
+  }
+
+  output += `## 🚫 Excludes:\n${[...defaultExcludedPatterns, ...excludePatterns]
     .map((p) => `- ${p}`)
     .join('\n')}\n\n`;
 
-  output += `## 📁 Directory Structure:\n${directories.map((p) => `- ${p}`).join('\n')}\n\n`;
+  output += `## 📁 Dir Structure:\n${directories.map((p) => `- ${p}`).join('\n')}\n\n`;
 
-  output += '## 💻 Source Code:\n====================\n\n';
+  output += '## 💻 Code:\n====================\n\n';
 
   let totalLines = 0;
   let processedFiles = 0;
 
-  console.log(chalk.yellow('📋 Processing files...'));
+  console.log(chalk.yellow('📋 Processing...'));
 
   for (const file of matchingFiles) {
     process.stdout.write(
@@ -118,20 +120,17 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
     output += `// ${file}\n`;
     let content = fs.readFileSync(path.join(projectDir, file), 'utf-8');
 
-    // Remove comments if option is enabled
     if (removeComments) {
       content = content.replace(multiLineCommentRegex, '');
       content = content.replace(singleLineCommentRegex, '');
     }
 
-    // Remove blank lines if option is enabled
     if (removeBlankLines) {
       content = content
         .split('\n')
         .filter((line) => line.trim() !== '')
         .join('\n');
     } else {
-      // Just remove excessive blank lines
       content = content.replace(/\n\s*\n\s*\n/g, '\n\n');
     }
 
@@ -142,19 +141,17 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
     processedFiles++;
   }
 
-  process.stdout.write('\r' + ' '.repeat(60) + '\r'); // Clear processing line
+  process.stdout.write('\r' + ' '.repeat(60) + '\r');
 
-  // Write output file
   fs.writeFileSync(path.join(projectDir, outputFilename), output);
 
-  // Final summary
-  console.log(chalk.green('\n✨ Documentation generated successfully!'));
+  console.log(chalk.green('\n✨ Doc gen success!'));
   console.log(chalk.dim('────────────────────────────────────'));
-  console.log(chalk.white(`📊 Statistics:`));
-  console.log(chalk.dim(`• Output file: ${chalk.cyan(outputFilename)}`));
-  console.log(chalk.dim(`• Total files: ${chalk.cyan(matchingFiles.length)}`));
-  console.log(chalk.dim(`• Total directories: ${chalk.cyan(directories.length)}`));
-  console.log(chalk.dim(`• Total lines of code: ${chalk.cyan(totalLines)}`));
+  console.log(chalk.white(`📊 Stats:`));
+  console.log(chalk.dim(`• Output: ${chalk.cyan(outputFilename)}`));
+  console.log(chalk.dim(`• Files: ${chalk.cyan(matchingFiles.length)}`));
+  console.log(chalk.dim(`• Dirs: ${chalk.cyan(directories.length)}`));
+  console.log(chalk.dim(`• LOC: ${chalk.cyan(totalLines)}`));
   console.log(
     chalk.dim(`• Blank lines: ${chalk.cyan(removeBlankLines ? 'Removed' : 'Preserved')}`)
   );
@@ -182,7 +179,7 @@ function parseArgs(args: string[]): GenerateOptions {
           .split('=')[1]
           .split(',')
           .map((p) => p.trim())
-          .filter((p) => p); // Remove empty entries
+          .filter((p) => p);
       } else if (arg.startsWith('--exclude=')) {
         options.excludePatterns = arg
           .split('=')[1]
@@ -196,7 +193,7 @@ function parseArgs(args: string[]): GenerateOptions {
       }
     }
   } catch (error) {
-    console.log(chalk.red('\n❌ Error parsing arguments:'));
+    console.log(chalk.red('\n❌ Args error:'));
     console.log(chalk.dim(error));
     console.log(chalk.yellow('\nUsage:'));
     console.log(
@@ -212,18 +209,17 @@ function parseArgs(args: string[]): GenerateOptions {
 
 const args = process.argv.slice(2);
 
-// Show help if no arguments or --help
 if (args.length === 0 || args.includes('--help')) {
-  console.log(chalk.cyan.bold('\n📘 Source Code Documentation Generator'));
+  console.log(chalk.cyan.bold('\n📘 Source Doc Gen'));
   console.log(chalk.dim('====================================='));
   console.log(chalk.white('\nUsage:'));
   console.log(chalk.dim('  generate-source [options]'));
   console.log(chalk.white('\nOptions:'));
-  console.log(chalk.dim('  --include=<paths>         Comma-separated list of paths to include'));
-  console.log(chalk.dim('  --exclude=<paths>         Comma-separated list of paths to exclude'));
-  console.log(chalk.dim('  --output=<filename>       Output filename (default: source-code.md)'));
-  console.log(chalk.dim('  --preserve-blank-lines    Preserve blank lines in output'));
-  console.log(chalk.dim('  --preserve-comments       Preserve comments in output'));
+  console.log(chalk.dim('  --include=<paths>         Include paths, comma separated'));
+  console.log(chalk.dim('  --exclude=<paths>         Exclude paths, comma separated'));
+  console.log(chalk.dim('  --output=<filename>       Output file (default: source-code.md)'));
+  console.log(chalk.dim('  --preserve-blank-lines    Keep blank lines'));
+  console.log(chalk.dim('  --preserve-comments       Keep comments'));
   console.log(chalk.white('\nExamples:'));
   console.log(chalk.dim('  generate-source --include=src/,scripts/'));
   console.log(chalk.dim('  generate-source --exclude=tests/,temp/'));
@@ -237,7 +233,7 @@ if (args.length === 0 || args.includes('--help')) {
 const options = parseArgs(args);
 
 generateSourceCodeMarkdown(options).catch((err) => {
-  console.log(chalk.red('\n❌ Error generating documentation:'));
+  console.log(chalk.red('\n❌ Doc gen fail:'));
   console.log(chalk.dim(err));
   process.exit(1);
 });

@@ -1,6 +1,6 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -58,8 +58,9 @@
     "glob": "^8.1.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.5",
+    "@types/bun": "^1.1.15",
     "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.5",
     "@typescript-eslint/eslint-plugin": "^8.19.0",
     "@typescript-eslint/parser": "^8.19.0",
     "eslint": "^9.17.0",
