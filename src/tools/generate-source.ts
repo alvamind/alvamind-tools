@@ -28,7 +28,7 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
 
   console.log(chalk.cyan.bold('\n📝 Generating Source Code Doc'));
   console.log(chalk.dim('=====================================\n'));
-
+  console.log(chalk.dim(`Current working directory: ${projectDir}`));
   const defaultExcludedPatterns = [
     '**/node_modules/**',
     '**/dist/**',
@@ -143,20 +143,28 @@ async function generateSourceCodeMarkdown(options: GenerateOptions) {
 
   process.stdout.write('\r' + ' '.repeat(60) + '\r');
 
-  fs.writeFileSync(path.join(projectDir, outputFilename), output);
+  const outputPath = path.join(projectDir, outputFilename);
 
-  console.log(chalk.green('\n✨ Doc gen success!'));
-  console.log(chalk.dim('────────────────────────────────────'));
-  console.log(chalk.white(`📊 Stats:`));
-  console.log(chalk.dim(`• Output: ${chalk.cyan(outputFilename)}`));
-  console.log(chalk.dim(`• Files: ${chalk.cyan(matchingFiles.length)}`));
-  console.log(chalk.dim(`• Dirs: ${chalk.cyan(directories.length)}`));
-  console.log(chalk.dim(`• LOC: ${chalk.cyan(totalLines)}`));
-  console.log(
-    chalk.dim(`• Blank lines: ${chalk.cyan(removeBlankLines ? 'Removed' : 'Preserved')}`)
-  );
-  console.log(chalk.dim(`• Comments: ${chalk.cyan(removeComments ? 'Removed' : 'Preserved')}`));
-  console.log(chalk.dim('────────────────────────────────────\n'));
+  console.log(chalk.dim(`• Output Path: ${chalk.cyan(outputPath)}`));
+  try {
+    fs.writeFileSync(outputPath, output);
+    console.log(chalk.green('\n✨ Doc gen success!'));
+    console.log(chalk.dim('────────────────────────────────────'));
+    console.log(chalk.white(`📊 Stats:`));
+    console.log(chalk.dim(`• Output: ${chalk.cyan(outputFilename)}`));
+    console.log(chalk.dim(`• Files: ${chalk.cyan(matchingFiles.length)}`));
+    console.log(chalk.dim(`• Dirs: ${chalk.cyan(directories.length)}`));
+    console.log(chalk.dim(`• LOC: ${chalk.cyan(totalLines)}`));
+    console.log(
+      chalk.dim(`• Blank lines: ${chalk.cyan(removeBlankLines ? 'Removed' : 'Preserved')}`)
+    );
+    console.log(chalk.dim(`• Comments: ${chalk.cyan(removeComments ? 'Removed' : 'Preserved')}`));
+    console.log(chalk.dim('────────────────────────────────────\n'));
+  } catch (error) {
+    console.error(chalk.red('\n❌ Doc gen fail:'));
+    console.error(chalk.dim(error));
+    process.exit(1);
+  }
 }
 
 function parseArgs(args: string[]): GenerateOptions {

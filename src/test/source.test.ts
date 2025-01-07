@@ -7,7 +7,7 @@ const testDir = path.join(__dirname, 'test-temp');
 const sourceFile = path.join(testDir, 'source-code.md');
 
 // Helper function to run the generate-source script
-function runGenerateSource(args: string = ''): string {
+async function runGenerateSource(args: string = ''): Promise<string> { // make async and return Promise<string>
   try {
     const projectRoot = path.join(__dirname, '..', '..'); // Adjust based on your actual project structure
     const scriptPath = path.join(projectRoot, 'src', 'tools', 'generate-source.ts');
@@ -55,8 +55,8 @@ afterEach(() => {
 });
 
 describe('generate-source.ts Parameter Testing', () => {
-  test('should generate source code documentation with default options', () => {
-    runGenerateSource();
+  test('should generate source code documentation with default options', async () => { // async test
+    await runGenerateSource(); // await here
     expect(fs.existsSync(sourceFile)).toBe(true);
     const content = fs.readFileSync(sourceFile, 'utf-8');
     expect(content).toContain('// test.ts');
@@ -65,10 +65,9 @@ describe('generate-source.ts Parameter Testing', () => {
     expect(content).toContain('// src/nested2.ts');
   });
 
-
   describe('--include parameter', () => {
-    test('should include a single file', () => {
-      runGenerateSource('--include=test.ts');
+    test('should include a single file', async () => { // async test
+      await runGenerateSource('--include=test.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('// test.ts');
@@ -77,8 +76,8 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).not.toContain('// src/nested2.ts');
     });
 
-    test('should include multiple files', () => {
-      runGenerateSource('--include=test.ts,test2.ts');
+    test('should include multiple files', async () => { // async test
+      await runGenerateSource('--include=test.ts,test2.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('// test.ts');
@@ -87,8 +86,8 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).not.toContain('// src/nested2.ts');
     });
 
-    test('should include a nested file', () => {
-      runGenerateSource('--include=src/nested.ts');
+    test('should include a nested file', async () => { // async test
+      await runGenerateSource('--include=src/nested.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('// src/nested.ts');
@@ -97,9 +96,8 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).not.toContain('// src/nested2.ts');
     });
 
-
-    test('should include multiple nested files', () => {
-      runGenerateSource('--include=src/nested.ts,src/nested2.ts');
+    test('should include multiple nested files', async () => { // async test
+      await runGenerateSource('--include=src/nested.ts,src/nested2.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('// src/nested.ts');
@@ -107,8 +105,8 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).not.toContain('// test.ts');
       expect(content).not.toContain('// test2.ts');
     });
-    test('should handle glob patterns', () => {
-      runGenerateSource('--include=src/*.ts');
+    test('should handle glob patterns', async () => { // async test
+      await runGenerateSource('--include=src/*.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('// src/nested.ts');
@@ -120,8 +118,8 @@ describe('generate-source.ts Parameter Testing', () => {
 
 
   describe('--exclude parameter', () => {
-    test('should exclude a single file', () => {
-      runGenerateSource('--exclude=test.ts');
+    test('should exclude a single file', async () => { // async test
+      await runGenerateSource('--exclude=test.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).not.toContain('// test.ts');
@@ -130,8 +128,8 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).toContain('// src/nested2.ts');
     });
 
-    test('should exclude multiple files', () => {
-      runGenerateSource('--exclude=test.ts,test2.ts');
+    test('should exclude multiple files', async () => { // async test
+      await runGenerateSource('--exclude=test.ts,test2.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).not.toContain('// test.ts');
@@ -140,8 +138,8 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).toContain('// src/nested2.ts');
     });
 
-    test('should exclude a nested file', () => {
-      runGenerateSource('--exclude=src/nested.ts');
+    test('should exclude a nested file', async () => { // async test
+      await runGenerateSource('--exclude=src/nested.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).not.toContain('// src/nested.ts');
@@ -149,19 +147,18 @@ describe('generate-source.ts Parameter Testing', () => {
       expect(content).toContain('// test2.ts');
       expect(content).toContain('// src/nested2.ts');
     });
-    test('should exclude nested files with pattern', () => {
-      runGenerateSource('--exclude=src/*.ts');
+    test('should exclude nested files with pattern', async () => { // async test
+      await runGenerateSource('--exclude=src/*.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).not.toContain('// src/nested.ts');
       expect(content).not.toContain('// src/nested2.ts');
       expect(content).toContain('// test.ts');
       expect(content).toContain('// test2.ts');
-
     });
 
-    test('should exclude multiple nested files', () => {
-      runGenerateSource('--exclude=src/nested.ts,src/nested2.ts');
+    test('should exclude multiple nested files', async () => { // async test
+      await runGenerateSource('--exclude=src/nested.ts,src/nested2.ts'); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).not.toContain('// src/nested.ts');
@@ -173,9 +170,9 @@ describe('generate-source.ts Parameter Testing', () => {
 
 
   describe('--output parameter', () => {
-    test('should handle custom output filename', () => {
+    test('should handle custom output filename', async () => { // async test
       const customOutput = path.join(testDir, 'custom-docs.md');
-      runGenerateSource(`--output=custom-docs.md`);
+      await runGenerateSource(`--output=custom-docs.md`); // await here
       expect(fs.existsSync(customOutput)).toBe(true);
       const content = fs.readFileSync(customOutput, 'utf-8');
       expect(content).toContain('// test.ts');
@@ -183,8 +180,8 @@ describe('generate-source.ts Parameter Testing', () => {
     });
   })
   describe('--preserve-blank-lines parameter', () => {
-    test('should preserve blank lines with --preserve-blank-lines', () => {
-      runGenerateSource(`--preserve-blank-lines`);
+    test('should preserve blank lines with --preserve-blank-lines', async () => { // async test
+      await runGenerateSource(`--preserve-blank-lines`); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('const c = 3;\n\n// This is nested');
@@ -192,8 +189,8 @@ describe('generate-source.ts Parameter Testing', () => {
   })
 
   describe('--preserve-comments parameter', () => {
-    test('should preserve comments with --preserve-comments', () => {
-      runGenerateSource(`--preserve-comments`);
+    test('should preserve comments with --preserve-comments', async () => { // async test
+      await runGenerateSource(`--preserve-comments`); // await here
       expect(fs.existsSync(sourceFile)).toBe(true);
       const content = fs.readFileSync(sourceFile, 'utf-8');
       expect(content).toContain('/* Test 2 */');
@@ -204,14 +201,13 @@ describe('generate-source.ts Parameter Testing', () => {
     });
   });
 
-
-  test('should handle missing files gracefully', () => {
-    const result = runGenerateSource('--include=nonexistent.ts');
+  test('should handle missing files gracefully', async () => { // async test
+    const result = await runGenerateSource('--include=nonexistent.ts'); // await here
     expect(result).toContain("Found 0 files");
   });
 
-  test('should handle no files gracefully', () => {
-    runGenerateSource('--exclude=**/*');
+  test('should handle no files gracefully', async () => { // async test
+    await runGenerateSource('--exclude=**/*'); // await here
     expect(fs.existsSync(sourceFile)).toBe(true);
     const content = fs.readFileSync(sourceFile, 'utf-8');
     expect(content).not.toContain('// test.ts');
@@ -220,17 +216,17 @@ describe('generate-source.ts Parameter Testing', () => {
     expect(content).not.toContain('// src/nested2.ts');
   });
 
-  test('should show help with no args', () => {
-    const result = runGenerateSource();
+  test('should show help with no args', async () => { // async test
+    const result = await runGenerateSource(); // await here
     expect(result).toContain("Usage:");
   });
-  test('should show help with --help arg', () => {
-    const result = runGenerateSource('--help');
+  test('should show help with --help arg', async () => { // async test
+    const result = await runGenerateSource('--help'); // await here
     expect(result).toContain("Usage:");
   });
-  test('should return error with invalid arg', () => {
+  test('should return error with invalid arg', async () => { // async test
     try {
-      runGenerateSource('--invalid=arg');
+      await runGenerateSource('--invalid=arg'); // await here
     } catch (e: any) {
       expect(e.message).toContain("Args error:");
     }
