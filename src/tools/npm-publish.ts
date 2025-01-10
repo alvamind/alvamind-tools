@@ -10,7 +10,6 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-// Get command line arguments
 const [, , versionArg, commitMessageArg] = process.argv;
 
 async function askQuestion(query: string): Promise<string> {
@@ -35,7 +34,6 @@ function getCurrentBranch(): string {
 function validatePackageJson(): void {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
   const requiredFields = ['name', 'version', 'description', 'main', 'types'];
-
   for (const field of requiredFields) {
     if (!packageJson[field]) {
       throw new Error(`Missing required field in package.json: ${field}`);
@@ -44,7 +42,6 @@ function validatePackageJson(): void {
 }
 
 async function selectVersionType(): Promise<string> {
-  // If version type is provided via command line, use it
   if (versionArg && ['patch', 'minor', 'major'].includes(versionArg)) {
     return versionArg;
   }
@@ -60,46 +57,34 @@ async function selectVersionType(): Promise<string> {
     '2': 'minor',
     '3': 'major',
   };
-
   return versionMap[answer] || 'patch';
 }
 
-async function getCommitMessage(): Promise<string> {
-  // If commit message is provided via command line, use it
+async function getCommitMessage(version: string): Promise<string> {
   if (commitMessageArg) {
     return commitMessageArg;
   }
 
-  const message = await askQuestion(chalk.cyan('Enter commit message: '));
-  if (!message.trim()) {
-    throw new Error('Commit message is required');
-  }
-  return message;
+  const defaultMessage = `chore: release v${version}`;
+  const message = await askQuestion(
+    chalk.cyan(`Enter commit message (default: "${defaultMessage}"): `)
+  );
+  return message.trim() || defaultMessage;
 }
 
 async function publishPackage() {
   try {
     console.log(chalk.cyan('\n🔍 Running pre-publish checks...\n'));
 
-    // Validate package.json
     console.log(chalk.cyan('📋 Validating package.json...'));
     validatePackageJson();
     console.log(chalk.green('✅ package.json is valid'));
 
-    // Check current branch
     const currentBranch = getCurrentBranch();
     if (currentBranch !== 'main' && currentBranch !== 'master') {
       console.log(chalk.yellow(`⚠️  You're on branch '${currentBranch}'.`));
     }
 
-    // Check for uncommitted changes
-    if (!checkGitStatus()) {
-      console.log(chalk.yellow('⚠️  You have uncommitted changes'));
-      const commitMessage = await getCommitMessage();
-      execSync(`bun commit "${commitMessage}"`, { stdio: 'inherit' });
-    }
-
-    // Clean and build
     console.log(chalk.cyan('\n🧹 Cleaning project...'));
     execSync('bun clean', { stdio: 'inherit' });
 
@@ -109,7 +94,6 @@ async function publishPackage() {
     console.log(chalk.cyan('\n🔨 Building project...'));
     execSync('bun run build', { stdio: 'inherit' });
 
-    // Run tests if they exist
     try {
       console.log(chalk.cyan('\n🧪 Running tests...'));
       execSync('bun test', { stdio: 'inherit' });
@@ -118,24 +102,32 @@ async function publishPackage() {
       console.log(chalk.yellow('⚠️  No tests found or tests failed'));
     }
 
-    // Version increment
     const versionType = await selectVersionType();
     console.log(chalk.cyan(`\n📝 Incrementing ${versionType} version...`));
     execSync(`npm version ${versionType} --no-git-tag-version`, { stdio: 'inherit' });
 
-    // Publish to npm
     console.log(chalk.cyan('\n🚀 Publishing to npm...'));
     execSync('npm publish', { stdio: 'inherit' });
 
-    // Create and push git tag
+    // Get the new version after publishing
     const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-    const tagName = `v${packageJson.version}`;
+    const newVersion = packageJson.version;
+    const tagName = `v${newVersion}`;
+
+    // Get commit message and commit changes
+    const commitMessage = await getCommitMessage(newVersion);
+    console.log(chalk.cyan('\n📝 Committing changes...'));
+    execSync(`bun commit "${commitMessage}"`, { stdio: 'inherit' });
+
+    // Create and push tag
+    console.log(chalk.cyan('\n🏷️  Creating and pushing tag...'));
     execSync(`git tag ${tagName}`, { stdio: 'inherit' });
-    execSync('git push && git push --tags', { stdio: 'inherit' });
+    execSync('git push --tags', { stdio: 'inherit' });
 
     console.log(chalk.green('\n✨ Package successfully published to npm!'));
-    console.log(chalk.gray(`Version: ${packageJson.version}`));
+    console.log(chalk.gray(`Version: ${newVersion}`));
     console.log(chalk.gray(`Tag: ${tagName}`));
+    console.log(chalk.gray(`Commit: ${commitMessage}`));
   } catch (error) {
     console.error(chalk.red('\n❌ Error during publish process:'), error);
     process.exit(1);
