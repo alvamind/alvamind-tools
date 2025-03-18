@@ -1,9 +1,10 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alvamind/alvamind-tools.git"
