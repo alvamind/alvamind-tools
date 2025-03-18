@@ -2,7 +2,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
 import chalk from 'chalk';
 
 const projectDir = process.cwd();

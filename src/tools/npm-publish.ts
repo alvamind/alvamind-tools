@@ -18,15 +18,6 @@ async function askQuestion(query: string): Promise<string> {
   });
 }
 
-function checkGitStatus(): boolean {
-  try {
-    const status = execSync('git status --porcelain').toString();
-    return status.length === 0;
-  } catch (error) {
-    return false;
-  }
-}
-
 function getCurrentBranch(): string {
   return execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
 }

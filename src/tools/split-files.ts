@@ -81,8 +81,6 @@ function splitFile(singleFilePath: string, markers: string[], outputDirPath?: st
 
   if (fileSections.length > 0) {
     console.log(chalk.cyan('\nFiles splitted successfully! ✨\n'));
-    const openCommand =
-      process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
     console.log(chalk.blue(`You can open the files with ${chalk.bold('CTRL+Click')}`));
   }
 }
