@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as readline from 'readline';
 import chalk from 'chalk';
+import { createWorkflow, WorkflowBuilder } from 'alvamind-workflow';
 
 // Add default gitignore content
 const defaultGitignore = `# Dependencies
@@ -14,26 +15,52 @@ const defaultGitignore = `# Dependencies
 
 # Testing
 /coverage
+/cypress/videos/
+/cypress/screenshots/
+/playwright-report/
+/test-results/
 
 # Production
 /build
 /dist
+/.next/
+/out/
+.output
+.nuxt
+.nitro
+.cache
+dist-ssr
+*.local
 
 # Misc
 .DS_Store
+.env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.pem
 
 # Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+lerna-debug.log*
 
 # IDE
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 *.swp
 *.swo
 
@@ -46,20 +73,78 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 
-# Optional npm cache directory
-.npm
+# Framework specific
+# Next.js
+.next
+next-env.d.ts
+.vercel
 
+# Vite
+.vite/
+
+# VitePress
+.vitepress/dist
+.vitepress/cache
+
+# Docusaurus
+.docusaurus/
+.cache-loader/
+
+# Astro
+.astro/
+
+# Remix
+.cache/
+/build/
+/public/build/
+/api/index.js
+/api/index.js.map
+
+# Package managers
+# npm
+.npm
 # Optional eslint cache
 .eslintcache
-
 # Optional REPL history
 .node_repl_history
-
 # Output of 'npm pack'
 *.tgz
+# Yarn
+.yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.yarn-integrity
+# pnpm
+.pnpm-store/
 
-# Yarn Integrity file
-.yarn-integrity`;
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs
+*.log
+
+# Coverage directory
+coverage
+*.lcov
+
+# Turbo
+.turbo
+
+# Storybook
+storybook-static/
+
+# PWA
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map`;
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -77,7 +162,8 @@ async function askQuestion(query: string): Promise<string> {
   });
 }
 
-async function isGhInstalled(): Promise<boolean> {
+// Export functions for testing
+export async function isGhInstalled(): Promise<boolean> {
   try {
     execSync('gh --version', { stdio: 'ignore' });
     return true;
@@ -87,8 +173,9 @@ async function isGhInstalled(): Promise<boolean> {
 }
 
 // Add function to create gitignore
-function createGitignore() {
-  const gitignorePath = path.join(projectDir, '.gitignore');
+export function createGitignore() {
+  // Use process.cwd() instead of hardcoded projectDir to respect current directory
+  const gitignorePath = path.join(process.cwd(), '.gitignore');
   if (!fs.existsSync(gitignorePath)) {
     console.log(chalk.yellow('ℹ️  Creating default .gitignore file...'));
     fs.writeFileSync(gitignorePath, defaultGitignore);
@@ -96,7 +183,7 @@ function createGitignore() {
   }
 }
 
-async function commitAndPush() {
+export async function commitAndPush() {
   if (!commitMessage) {
     console.error(chalk.red('❌ Commit message is required.'));
     process.exit(1);
@@ -107,64 +194,31 @@ async function commitAndPush() {
     process.chdir(projectDir);
     console.log(chalk.gray(`📂 Working in: ${projectDir}`));
 
-    // Check if .git exists
-    const isNewRepo = !fs.existsSync(path.join(projectDir, '.git'));
-    if (isNewRepo) {
-      console.log(chalk.yellow('⚠️  No git repository found. Initializing...'));
-      execSync('git init', { stdio: 'inherit' });
-      console.log(chalk.green('✅ Git repository initialized.'));
-
-      // Create .gitignore for new repositories
-      createGitignore();
-    }
-
-    // Check for .gitignore even in existing repositories
+    // Create .gitignore if needed
     createGitignore();
 
-    // Stage and commit changes first
+    // Check if there are changes to commit
     const status = execSync('git status --porcelain').toString();
     if (!status) {
       console.log(chalk.yellow('ℹ️  No changes to commit.'));
+      rl.close();
       process.exit(0);
     }
 
-    console.log(chalk.cyan('📝 Staging all changes...'));
-    execSync('git add .', { stdio: 'inherit' });
-    console.log(chalk.cyan('💾 Committing changes...'));
-    execSync(`git commit -m "${commitMessage}"`, { stdio: 'inherit' });
+    // Create the initial workflow
+    const workflow = createWorkflow({ name: "Git Commit Workflow" });
 
-    // Now check for gh and create remote repository if needed
-    if (await !isGhInstalled()) {
-      console.log(
-        chalk.yellow('⚠️  GitHub CLI (gh) is not installed. Skipping remote repository creation.')
-      );
-    } else {
-      console.log(chalk.cyan('🔍 Checking for remote repository...'));
-      try {
-        execSync('gh repo view', { stdio: 'ignore' });
-        console.log(chalk.green('✅ Remote repository found.'));
-      } catch (error) {
-        console.log(chalk.yellow('⚠️  No remote repository found. Creating...'));
-        const makePrivate = await askQuestion(chalk.cyan('Make repository private? (y/n): '));
-        const repoType = makePrivate.toLowerCase() === 'y' ? 'private' : 'public';
-        execSync(`gh repo create ${projectName} --${repoType} --source=. --push`, {
-          stdio: 'inherit',
-        });
-        console.log(chalk.green(`✅ Created ${repoType} repository: ${projectName} on GitHub`));
-      }
-    }
+    // Setup repository if needed
+    await setupRepository(workflow);
 
-    // Push changes
-    try {
-      execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { stdio: 'ignore' });
-      console.log(chalk.cyan('⬆️  Pushing changes...'));
-      execSync('git push', { stdio: 'inherit' });
-    } catch (error) {
-      const remoteName = 'origin';
-      const branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
-      console.log(chalk.cyan(`⬆️  Setting upstream and pushing to ${remoteName}/${branchName}...`));
-      execSync(`git push --set-upstream ${remoteName} ${branchName}`, { stdio: 'inherit' });
-    }
+    // Add core git operations
+    addGitOperations(workflow);
+
+    // Handle remote setup and push if GitHub CLI is available
+    await setupRemoteAndPush(workflow);
+
+    // Run the workflow
+    await workflow.run({ interactive: true });
 
     console.log(chalk.green('✅ Changes committed and pushed successfully!'));
   } catch (error) {
@@ -175,4 +229,99 @@ async function commitAndPush() {
   }
 }
 
-commitAndPush();
+// Setup git repository if needed
+export async function setupRepository(workflow: WorkflowBuilder): Promise<WorkflowBuilder> {
+  const isNewRepo = !fs.existsSync(path.join(process.cwd(), '.git'));
+  if (isNewRepo) {
+    return workflow.execute('git init', 'Initialize Git Repository', false);
+  }
+  return workflow;
+}
+
+// Add core git operations to workflow
+export function addGitOperations(workflow: WorkflowBuilder): WorkflowBuilder {
+  return workflow
+    .execute('git add .', 'Stage all changes', false)
+    .execute(`git commit -m "${commitMessage}"`, 'Commit changes', false);
+}
+
+// Setup remote repository and push changes
+export async function setupRemoteAndPush(workflow: WorkflowBuilder): Promise<WorkflowBuilder> {
+  const hasGitHubCLI = await isGhInstalled();
+  if (!hasGitHubCLI) {
+    // Return workflow without modifications when GitHub CLI is not installed
+    return workflow;
+  }
+
+  let remoteExists = false;
+  try {
+    execSync('git remote -v', { stdio: 'ignore' });
+    const remoteOutput = execSync('git remote -v').toString();
+    remoteExists = remoteOutput.includes('origin');
+  } catch (error) {
+    remoteExists = false;
+  }
+
+  const branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+
+  if (!remoteExists) {
+    return await setupNewRemote(workflow, branchName);
+  } else {
+    return setupExistingRemote(workflow, branchName);
+  }
+}
+
+// Setup a new remote repository
+export async function setupNewRemote(workflow: WorkflowBuilder, branchName: string): Promise<WorkflowBuilder> {
+  // Use a try/catch to prevent hanging if askQuestion isn't available during tests
+  let repoType = 'public';
+  try {
+    const makePrivate = await askQuestion(chalk.cyan('Make repository private? (y/n): '));
+    repoType = makePrivate.toLowerCase() === 'y' ? 'private' : 'public';
+  } catch (error) {
+    // Default to public in case of error or in test environment
+  }
+
+  return workflow
+    .execute(
+      `gh repo create ${projectName} --${repoType} --source=.`,
+      `Create ${repoType} repository on GitHub`,
+      false
+    )
+    .execute(
+      `git remote -v || git remote add origin https://github.com/$(gh api user | grep login | cut -d: -f2 | tr -d '", ')/${projectName}.git`,
+      'Ensure remote is set correctly',
+      false
+    )
+    .execute(
+      `git push --set-upstream origin ${branchName}`,
+      `Push and set upstream to origin/${branchName}`,
+      false
+    );
+}
+
+// Setup push for existing remote
+export function setupExistingRemote(workflow: WorkflowBuilder, branchName: string): WorkflowBuilder {
+  let hasUpstream = false;
+  try {
+    execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { stdio: 'ignore' });
+    hasUpstream = true;
+  } catch (error) {
+    // No upstream branch is set
+  }
+
+  if (hasUpstream) {
+    return workflow.execute('git push', 'Push changes to remote', false);
+  } else {
+    return workflow.execute(
+      `git push --set-upstream origin ${branchName}`,
+      `Push and set upstream to origin/${branchName}`,
+      false
+    );
+  }
+}
+
+// Only run if this script is executed directly
+if (require.main === module) {
+  commitAndPush();
+}

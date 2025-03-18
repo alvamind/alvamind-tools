@@ -1,6 +1,6 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -54,6 +54,7 @@
   "homepage": "https://github.com/alvamind/alvamind-tools#readme",
   "dependencies": {
     "@types/glob": "^8.1.0",
+    "alvamind-workflow": "^1.0.1",
     "chalk": "4.1.2",
     "glob": "^8.1.0"
   },
