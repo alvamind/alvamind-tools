@@ -1,6 +1,6 @@
 {
   "name": "alvamind-tools",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "CLI tools for generating source code documentation and git automation",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -206,7 +206,7 @@ export async function commitAndPush() {
     }
 
     // Create the initial workflow
-    const workflow = createWorkflow({ name: "Git Commit Workflow" });
+    const workflow = createWorkflow({ name: 'Git Commit Workflow' });
 
     // Setup repository if needed
     await setupRepository(workflow);
@@ -272,7 +272,10 @@ export async function setupRemoteAndPush(workflow: WorkflowBuilder): Promise<Wor
 }
 
 // Setup a new remote repository
-export async function setupNewRemote(workflow: WorkflowBuilder, branchName: string): Promise<WorkflowBuilder> {
+export async function setupNewRemote(
+  workflow: WorkflowBuilder,
+  branchName: string
+): Promise<WorkflowBuilder> {
   // Use a try/catch to prevent hanging if askQuestion isn't available during tests
   let repoType = 'public';
   try {
@@ -301,7 +304,10 @@ export async function setupNewRemote(workflow: WorkflowBuilder, branchName: stri
 }
 
 // Setup push for existing remote
-export function setupExistingRemote(workflow: WorkflowBuilder, branchName: string): WorkflowBuilder {
+export function setupExistingRemote(
+  workflow: WorkflowBuilder,
+  branchName: string
+): WorkflowBuilder {
   let hasUpstream = false;
   try {
     execSync('git rev-parse --abbrev-ref --symbolic-full-name @{u}', { stdio: 'ignore' });
@@ -322,6 +328,4 @@ export function setupExistingRemote(workflow: WorkflowBuilder, branchName: strin
 }
 
 // Only run if this script is executed directly
-if (require.main === module) {
-  commitAndPush();
-}
+commitAndPush();
